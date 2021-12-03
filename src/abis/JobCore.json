@@ -1,0 +1,991 @@
+[
+  {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "_title",
+        "type": "string"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_salaryMin",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_salaryMax",
+        "type": "uint256"
+      },
+      {
+        "internalType": "string",
+        "name": "_location",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "_experience",
+        "type": "string"
+      },
+      {
+        "internalType": "string[]",
+        "name": "_skills",
+        "type": "string[]"
+      },
+      {
+        "internalType": "string",
+        "name": "_descriptions",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "_benefits",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "_requirements",
+        "type": "string"
+      }
+    ],
+    "name": "addJob",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_recruiter",
+        "type": "address"
+      },
+      {
+        "internalType": "string",
+        "name": "_name",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "_headquarter",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "_companySize",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "_website",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "_contact",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "_addr",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "_logo",
+        "type": "string"
+      }
+    ],
+    "name": "addRecruiter",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "_url",
+        "type": "string"
+      }
+    ],
+    "name": "addResume",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_jobId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_resumeId",
+        "type": "uint256"
+      }
+    ],
+    "name": "applyJob",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "stateMutability": "nonpayable",
+    "type": "constructor"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "previousOwner",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "newOwner",
+        "type": "address"
+      }
+    ],
+    "name": "OwnershipTransferred",
+    "type": "event"
+  },
+  {
+    "inputs": [],
+    "name": "renounceOwnership",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "newOwner",
+        "type": "address"
+      }
+    ],
+    "name": "transferOwnership",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "_url",
+        "type": "string"
+      }
+    ],
+    "name": "updateCurrentResume",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "appliedJobs",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "appliedResumes",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "currentResume",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "id",
+        "type": "uint256"
+      },
+      {
+        "internalType": "string",
+        "name": "url",
+        "type": "string"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getAppliedJobs",
+    "outputs": [
+      {
+        "internalType": "uint256[]",
+        "name": "",
+        "type": "uint256[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_jobId",
+        "type": "uint256"
+      }
+    ],
+    "name": "getAppliedResumeIds",
+    "outputs": [
+      {
+        "internalType": "uint256[]",
+        "name": "",
+        "type": "uint256[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getCurrentResume",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "id",
+            "type": "uint256"
+          },
+          {
+            "internalType": "string",
+            "name": "url",
+            "type": "string"
+          }
+        ],
+        "internalType": "struct JobCore.Resume",
+        "name": "",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_jobId",
+        "type": "uint256"
+      }
+    ],
+    "name": "getJob",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "id",
+            "type": "uint256"
+          },
+          {
+            "internalType": "string",
+            "name": "title",
+            "type": "string"
+          },
+          {
+            "internalType": "uint256",
+            "name": "salaryMin",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "salaryMax",
+            "type": "uint256"
+          },
+          {
+            "internalType": "string",
+            "name": "location",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "experience",
+            "type": "string"
+          },
+          {
+            "internalType": "string[]",
+            "name": "skills",
+            "type": "string[]"
+          },
+          {
+            "internalType": "string",
+            "name": "descriptions",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "benefits",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "requirements",
+            "type": "string"
+          },
+          {
+            "internalType": "uint256",
+            "name": "expiredIn",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct JobCore.Job",
+        "name": "",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getJobs",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "id",
+            "type": "uint256"
+          },
+          {
+            "internalType": "string",
+            "name": "title",
+            "type": "string"
+          },
+          {
+            "internalType": "uint256",
+            "name": "salaryMin",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "salaryMax",
+            "type": "uint256"
+          },
+          {
+            "internalType": "string",
+            "name": "location",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "experience",
+            "type": "string"
+          },
+          {
+            "internalType": "string[]",
+            "name": "skills",
+            "type": "string[]"
+          },
+          {
+            "internalType": "string",
+            "name": "descriptions",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "benefits",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "requirements",
+            "type": "string"
+          },
+          {
+            "internalType": "uint256",
+            "name": "expiredIn",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct JobCore.Job[]",
+        "name": "",
+        "type": "tuple[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "first",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "skip",
+        "type": "uint256"
+      }
+    ],
+    "name": "getJobs",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "id",
+            "type": "uint256"
+          },
+          {
+            "internalType": "string",
+            "name": "title",
+            "type": "string"
+          },
+          {
+            "internalType": "uint256",
+            "name": "salaryMin",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "salaryMax",
+            "type": "uint256"
+          },
+          {
+            "internalType": "string",
+            "name": "location",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "experience",
+            "type": "string"
+          },
+          {
+            "internalType": "string[]",
+            "name": "skills",
+            "type": "string[]"
+          },
+          {
+            "internalType": "string",
+            "name": "descriptions",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "benefits",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "requirements",
+            "type": "string"
+          },
+          {
+            "internalType": "uint256",
+            "name": "expiredIn",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct JobCore.Job[]",
+        "name": "",
+        "type": "tuple[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getLatestJobId",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getLatestRecruiterId",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getOwnerJobs",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "id",
+            "type": "uint256"
+          },
+          {
+            "internalType": "string",
+            "name": "title",
+            "type": "string"
+          },
+          {
+            "internalType": "uint256",
+            "name": "salaryMin",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "salaryMax",
+            "type": "uint256"
+          },
+          {
+            "internalType": "string",
+            "name": "location",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "experience",
+            "type": "string"
+          },
+          {
+            "internalType": "string[]",
+            "name": "skills",
+            "type": "string[]"
+          },
+          {
+            "internalType": "string",
+            "name": "descriptions",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "benefits",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "requirements",
+            "type": "string"
+          },
+          {
+            "internalType": "uint256",
+            "name": "expiredIn",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct JobCore.Job[]",
+        "name": "",
+        "type": "tuple[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getOwnerResumes",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "id",
+            "type": "uint256"
+          },
+          {
+            "internalType": "string",
+            "name": "url",
+            "type": "string"
+          }
+        ],
+        "internalType": "struct JobCore.Resume[]",
+        "name": "",
+        "type": "tuple[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_resumeId",
+        "type": "uint256"
+      }
+    ],
+    "name": "getResumeById",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "id",
+            "type": "uint256"
+          },
+          {
+            "internalType": "string",
+            "name": "url",
+            "type": "string"
+          }
+        ],
+        "internalType": "struct JobCore.Resume",
+        "name": "",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_jobId",
+        "type": "uint256"
+      }
+    ],
+    "name": "isAppliedJob",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_jobId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_resumeId",
+        "type": "uint256"
+      }
+    ],
+    "name": "isResumeApplied",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "jobOwner",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "jobs",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "id",
+        "type": "uint256"
+      },
+      {
+        "internalType": "string",
+        "name": "title",
+        "type": "string"
+      },
+      {
+        "internalType": "uint256",
+        "name": "salaryMin",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "salaryMax",
+        "type": "uint256"
+      },
+      {
+        "internalType": "string",
+        "name": "location",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "experience",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "descriptions",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "benefits",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "requirements",
+        "type": "string"
+      },
+      {
+        "internalType": "uint256",
+        "name": "expiredIn",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "owner",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "ownerJobs",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "recruiters",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "id",
+        "type": "uint256"
+      },
+      {
+        "internalType": "string",
+        "name": "name",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "headquarter",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "companySize",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "website",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "contact",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "addr",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "logo",
+        "type": "string"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "recruiterToId",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "resumeIndexs",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "resumeOwner",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  }
+]
