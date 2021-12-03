@@ -1,8 +1,9 @@
 @import url("https://fonts.googleapis.com/css?family=Exo:400,700");
 
 * {
-  margin: 0px;
-  padding: 0px;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
 body {
@@ -49,4 +50,79 @@ code {
 
 .pre-line {
   white-space: pre-line;
+}
+
+.timeline {
+  width: calc(100% - 30px);
+  display: flex;
+  position: relative;
+  margin-bottom: 24px;
+}
+
+.timeline::before {
+  top: 11px;
+  left: 0;
+  width: 100%;
+  height: 5px;
+  content: "";
+  display: block;
+  position: absolute;
+  background: #44454b;
+  border-radius: 20px;
+}
+
+.timeline li {
+  color: #aeaeae;
+  width: calc(100% / 4);
+  display: flex;
+  position: relative;
+  font-size: 14px;
+  font-family: DM Sans;
+  font-weight: bold;
+  line-height: 18px;
+  flex-direction: column;
+}
+
+.timeline li:last-child {
+  width: 0;
+}
+
+.timeline li.active {
+  color: #6398ff;
+}
+
+.timeline li .timeline_index {
+  width: 28px;
+  cursor: pointer;
+  height: 28px;
+  display: flex;
+  font-size: 16px;
+  background: #44454b;
+  align-items: center;
+  border-radius: 50%;
+  justify-content: center;
+}
+
+.timeline li.active .timeline_index {
+  color: #ffffff;
+  background: #6398ff;
+}
+
+.timeline li .timeline_name {
+  left: calc(-50% + 14px);
+  position: relative;
+  margin-top: 12px;
+  text-align: center;
+}
+
+.timeline li:first-child .timeline_name {
+  left: 0;
+  text-align: left;
+}
+
+.timeline li:last-child .timeline_name {
+  left: 0;
+  text-align: right;
+  word-wrap: unset;
+  width: 28px;
 }
