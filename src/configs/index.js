@@ -1,63 +1,20 @@
-const { BigNumber } = require("@ethersproject/bignumber");
+export const PRE_ORDER_ADDRESS = "0x52a432e950beD49e808c201f5A45cc6F28F15672";
+export const TOKEN_A_ADDRESS = "0xC6C679DD13AD5732eCa77478f3d0A8baD159221b";
+export const TOKEN_B_ADDRESS = "0x1b92f04269Bc9413514694ec0Fa5FBCE5CDd6a99";
 
-export const JOB_CORE_ADDRESS = "0xb833A55b1C6036E24ec7dd13AcBE4d059C146eb5";
-
-export const JOB_CORE_METHODS = {
-  getLatestRecruiterId: "getLatestRecruiterId",
-  recruiters: "recruiters",
-  getLatestJobId: "getLatestJobId",
-  getJob: "getJob",
-  getJobs: "getJobs(uint256,uint256)",
-  jobOwner: "jobOwner",
-  recruiterToId: "recruiterToId",
-  addJob: "addJob",
-  getOwnerJobs: "getOwnerJobs",
-  jobs: "jobs",
-  updateCurrentResume: "updateCurrentResume",
-  getCurrentResume: "getCurrentResume",
-  addResume: "addResume",
-  getOwnerResumes: "getOwnerResumes",
-  isAppliedJob: "isAppliedJob",
-  isResumeApplied: "isResumeApplied",
-  applyJob: "applyJob",
-  getAppliedJobs: "getAppliedJobs",
+export const PRE_ORDER_METHODS = {
+  startTimeSwap: "startTimeSwap",
+  startTimeClaim: "startTimeClaim",
+  totalAmountBought: "totalAmountBought",
+  currentClaimBatch: "currentClaimBatch",
+  buyPreOrder: "buyPreOrder",
+  claimPendingToken: "claimPendingToken",
 };
 
-export const OneBigNumber = BigNumber.from("1");
-export const ZeroBigNumber = BigNumber.from("0");
-
-export const LOCATIONS = {
-  ALL: "All cities",
-  HA_NOI: "Ha Noi",
-  HO_CHI_MINH: "Ho Chi Minh",
-  DA_NANG: "Da Nang",
-  OTHER: "Other",
+export const ERC20_METHODS = {
+  allowance: "allowance",
+  approve: "approve",
 };
 
-export const SKILLS = {
-  BLOCKCHAIN: "Blockchain",
-  JAVASCRIPT: "Javascript",
-  HTML_CSS: "HTML & CSS",
-  DATABASE: "Database",
-  GIT: "Git",
-  OTHER: "Other",
-};
-
-export const CANDIDATE_MODAL_TITLE = {
-  ADD_EDUCATION: "Add Education",
-  ADD_EXPERIENCE: "Add Experience",
-  ADD_SKILL: "Add Skill",
-  ADD_PROJECT: "Add Project",
-  ADD_CERTIFICATE: "Add Certificate",
-  ADD_PRIZE: "Add Prize",
-};
-
-export const CANDIDATE_INFO_TYPE = {
-  PERSONAL_INFO: "personalInfo",
-  EDUCATION: "education",
-  EXPERIENCES: "experiences",
-  SKILLS: "skills",
-  CERTIFICATES: "certificates",
-  PROJECTS: "projects",
-  PRIZES: "prizes",
-};
+export const MAX_UINT256 =
+  "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff";

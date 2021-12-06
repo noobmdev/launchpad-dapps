@@ -1,17 +1,11 @@
+import { Web3Provider } from "@ethersproject/providers";
+import { useWeb3React, Web3ReactProvider } from "@web3-react/core";
 import { Routes } from "components/route/Routes";
+import { useEagerConnect, useInactiveListener } from "connectors/hooks";
 import { GlobalContext } from "context/GlobalContext";
+import { messages } from "language";
 import { useContext, useEffect, useState } from "react";
 import { IntlProvider } from "react-intl";
-import { messages } from "language";
-
-import { Web3Provider } from "@ethersproject/providers";
-import {
-  UnsupportedChainIdError,
-  useWeb3React,
-  Web3ReactProvider,
-} from "@web3-react/core";
-import { useEagerConnect, useInactiveListener } from "connectors/hooks";
-import { injected } from "connectors";
 
 function getLibrary(provider) {
   const library = new Web3Provider(provider);
@@ -23,8 +17,6 @@ function App() {
   const { language } = useContext(GlobalContext);
   const { connector } = useWeb3React();
 
-  const [loading, setLoading] = useState(false);
-
   const [activatingConnector, setActivatingConnector] = useState();
   useEffect(() => {
     if (activatingConnector && activatingConnector === connector) {
@@ -34,15 +26,14 @@ function App() {
   const triedEager = useEagerConnect();
   useInactiveListener(!triedEager || !!activatingConnector);
 
-  return loading ? (
-    <div>loading</div>
-  ) : (
+  return (
     <IntlProvider locale={language} messages={messages[language]}>
       <Routes />
     </IntlProvider>
   );
 }
 
+// eslint-disable-next-line import/no-anonymous-default-export
 export default function () {
   return (
     <Web3ReactProvider getLibrary={getLibrary}>
