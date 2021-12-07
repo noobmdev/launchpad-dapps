@@ -479,7 +479,7 @@ const Home = () => {
                 totalBought
                   ? parseFloat(formatUnits(totalBought.toString(), 18) * 100) /
                     totalPreOrder
-                  : 5
+                  : 0
               }
               borderRadius="3em"
             />
