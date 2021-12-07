@@ -1,7 +1,7 @@
 import { Button } from "@chakra-ui/button";
 import { Image } from "@chakra-ui/image";
 import { Input } from "@chakra-ui/input";
-import { Box, Grid, GridItem, HStack, VStack } from "@chakra-ui/layout";
+import { Box, Flex, Grid, GridItem, HStack, VStack } from "@chakra-ui/layout";
 import { Progress } from "@chakra-ui/progress";
 import { Tooltip } from "@chakra-ui/tooltip";
 import { BigNumber } from "@ethersproject/bignumber";
@@ -136,20 +136,22 @@ const Home = () => {
   }, [currentTimeline, startTime]);
 
   useEffect(() => {
-    const currentTimestamp = Math.floor(Date.now() / 1000);
-    if (startTime.swap === 0 || startTime.swap > currentTimestamp) {
-      setCurrentTimeline(timeline[0]);
-    } else if (
-      totalBought &&
-      totalBought?.lt(BigNumber.from(parseUnits(totalPreOrder.toString(), 18)))
-    ) {
-      setCurrentTimeline(timeline[1]);
-    } else if (startTime.swap === 0 || startTime.claim > currentTimestamp) {
-      setCurrentTimeline(timeline[2]);
-    } else if (true) {
-      setCurrentTimeline(timeline[3]);
+    if (startTime.swap !== 0) {
+      const currentTimestamp = Math.floor(Date.now() / 1000);
+      if (
+        totalBought &&
+        totalBought?.lt(
+          BigNumber.from(parseUnits(totalPreOrder.toString(), 18))
+        )
+      ) {
+        setCurrentTimeline(timeline[1]);
+      } else if (startTime.swap === 0 || startTime.claim > currentTimestamp) {
+        setCurrentTimeline(timeline[2]);
+      } else {
+        setCurrentTimeline(timeline[3]);
+      }
     }
-  }, [startTime]);
+  }, [startTime, totalBought, totalPreOrder]);
 
   const getAllowanceTokenB = async (value) => {
     if (!value || !library || !account) return;
@@ -157,10 +159,11 @@ const Home = () => {
     if (!reDecimal.test(value))
       return alert("Please enter valid decimal number");
     try {
+      setSwapping(true);
       const amount = parseUnits(value, 18);
       setAmountSwap(amount);
       const allowance = await getAllowanceB(library, account);
-      console.log();
+      console.log("allowance", allowance);
       if (BigNumber.from(amount).gt(allowance)) {
         setNeedApprove(true);
       }
@@ -170,10 +173,12 @@ const Home = () => {
     }
   };
 
-  const debounceFn = useCallback(debounce(getAllowanceTokenB, 1000), []);
+  const debounceFn = useCallback(debounce(getAllowanceTokenB, 1000), [
+    account,
+    library,
+  ]);
 
   const handleChangeAmountSwap = (e) => {
-    setSwapping(true);
     debounceFn(e.target.value);
   };
 
@@ -187,6 +192,12 @@ const Home = () => {
     } catch (error) {
       setApproving(false);
       console.error(error);
+      if (error.data?.message) {
+        alert(
+          error.data.message?.toString().replace("execution reverted: ", "") ??
+            "ERROR"
+        );
+      }
     }
   };
 
@@ -200,6 +211,12 @@ const Home = () => {
     } catch (error) {
       setSwapping(false);
       console.error(error);
+      if (error.data?.message) {
+        alert(
+          error.data.message?.toString().replace("execution reverted: ", "") ??
+            "ERROR"
+        );
+      }
     }
   };
 
@@ -230,7 +247,7 @@ const Home = () => {
             <Box>
               <Box>End to apply for the Whitelist in</Box>
               <HStack align="flex-start" spacing="0">
-                <Box textAlign="center" pos="relative" px="4">
+                <Box textAlign="center" pos="relative" px={{ base: 2, md: 4 }}>
                   <Box fontWeight="semibold" fontSize="2xl">
                     {timeLeft.days}
                   </Box>
@@ -241,7 +258,7 @@ const Home = () => {
                     :
                   </Box>
                 </Box>
-                <Box textAlign="center" pos="relative" px="4">
+                <Box textAlign="center" pos="relative" px={{ base: 2, md: 4 }}>
                   <Box fontWeight="semibold" fontSize="2xl">
                     {timeLeft.hours}
                   </Box>
@@ -252,7 +269,7 @@ const Home = () => {
                     :
                   </Box>
                 </Box>
-                <Box textAlign="center" pos="relative" px="4">
+                <Box textAlign="center" pos="relative" px={{ base: 2, md: 4 }}>
                   <Box fontWeight="semibold" fontSize="2xl">
                     {timeLeft.minutes}
                   </Box>
@@ -263,7 +280,7 @@ const Home = () => {
                     :
                   </Box>
                 </Box>
-                <Box textAlign="center" pos="relative" px="4">
+                <Box textAlign="center" pos="relative" px={{ base: 2, md: 4 }}>
                   <Box fontWeight="semibold" fontSize="2xl">
                     {timeLeft.seconds}
                   </Box>
@@ -354,35 +371,38 @@ const Home = () => {
       <GridItem colSpan={{ base: 2, xl: 1 }} py="6">
         <Grid templateColumns="repeat(2,1fr)" gap="2">
           <GridItem colSpan="2">
-            <HStack>
+            <Flex
+              flexDir={{ base: "column", md: "row", xl: "row" }}
+              align="center"
+            >
               <Image boxSize="10" src="https://i.imgur.com/j6CS2Lm.png" />
-              <Box fontSize="2xl" fontWeight="semibold">
+              <Box
+                p="2"
+                fontSize="2xl"
+                fontWeight="semibold"
+                textAlign={{ base: "center", md: "left" }}
+              >
                 DopeWarZ Community Sale
               </Box>
-            </HStack>
+            </Flex>
           </GridItem>
           <GridItem colSpan="2">
-            <HStack spacing="4">
-              <HStack>
+            <HStack spacing="0" flexFlow="wrap">
+              <HStack p="2" w={{ base: "50%", md: "inherit", xl: "inherit" }}>
                 <Image
                   boxSize="5"
                   src="https://redkite.polkafoundry.com/images/BUSD.png"
                 />
                 <Box>BUSD</Box>
               </HStack>
-              <HStack
-                borderLeft="1px solid"
-                borderRight="1px solid"
-                px="4"
-                borderColor="gray.400"
-              >
+              <HStack p="2" w={{ base: "50%", md: "inherit", xl: "inherit" }}>
                 <Image
                   boxSize="5"
                   src="https://redkite.polkafoundry.com/images/icons/rocket.svg"
                 />
                 <Box>No tier & KYC required</Box>
               </HStack>
-              <HStack>
+              <HStack p="2">
                 <Image
                   boxSize="5"
                   src="https://redkite.polkafoundry.com/images/bsc.svg"
@@ -413,7 +433,27 @@ const Home = () => {
           <Box fontSize="lg" fontWeight="semibold">
             POOL TIMELINE
           </Box>
-          <ul className="timeline">
+
+          <HStack
+            pos="relative"
+            justify="space-between"
+            spacing="0"
+            flexDir={{ base: "column", md: "row" }}
+            h={{ base: "64", md: "8" }}
+            align={{ base: "left", md: "center" }}
+          >
+            <Box
+              pos="absolute"
+              left={{ base: "13px", md: "0" }}
+              right={{ base: "", md: "0" }}
+              bottom={{ base: "0", md: "" }}
+              top={{ base: "0", md: "50%" }}
+              transform={{ base: "translateX(-50%)", md: "translateY(-50%)" }}
+              h={{ base: "100%", md: "1.5" }}
+              w={{ base: "1.5", md: "100%" }}
+              bg="#44454b"
+              borderRadius="md"
+            />
             {timeline.map((time, idx) => (
               <Tooltip
                 key={idx}
@@ -421,18 +461,43 @@ const Home = () => {
                 placement="bottom-start"
                 p="4"
               >
-                <li
-                  className={
-                    currentTimeline.value === time.value ? "active" : ""
+                <Box
+                  zIndex="1"
+                  bg={
+                    currentTimeline.value === time.value ? "#6398ff" : "#44454b"
                   }
+                  textAlign="center"
+                  w="26px"
+                  h="26px"
+                  lineHeight="26px"
+                  borderRadius="50%"
+                  pos="relative"
+                  cursor="pointer"
+                  fontSize="sm"
                 >
-                  <span className="timeline_index">{idx + 1}</span>
-                  <span className="timeline_name">{time.name}</span>
-                </li>
+                  {idx + 1}
+                  <Box
+                    pos="absolute"
+                    top={{ base: "50%", md: "calc(100% + 8px)" }}
+                    left={{
+                      base: "calc(100% + 14px)",
+                      md: idx === 0 ? "calc(100% + 8px)" : "50%",
+                    }}
+                    transform={{
+                      base: "translateY(-50%)",
+                      md: "translateX(-50%)",
+                    }}
+                    color="#aeaeae"
+                    fontSize="sm"
+                    fontWeight="semibold"
+                  >
+                    {time.name}
+                  </Box>
+                </Box>
               </Tooltip>
             ))}
-          </ul>
-          {renderTimelineContent()}
+          </HStack>
+          <HStack pt={{ base: 0, md: 8 }}>{renderTimelineContent()}</HStack>
         </VStack>
       </GridItem>
       <GridItem
@@ -497,10 +562,10 @@ const Home = () => {
                 templateColumns={{ base: "repeat(6,1fr)", xl: "repeat(3,1fr)" }}
                 gap="2"
               >
-                <GridItem>
+                <GridItem colSpan={{ base: 2, md: 1 }}>
                   <Box color="gray.400">Token Swap Time</Box>
                 </GridItem>
-                <GridItem colSpan="2">
+                <GridItem colSpan={{ base: 4, md: 2 }}>
                   <Box>10:15 PM Dec 01, 2021 (GMT+07:00)</Box>
                 </GridItem>
               </Grid>
@@ -510,10 +575,10 @@ const Home = () => {
                 templateColumns={{ base: "repeat(6,1fr)", xl: "repeat(3,1fr)" }}
                 gap="2"
               >
-                <GridItem>
+                <GridItem colSpan={{ base: 2, md: 1 }}>
                   <Box color="gray.400">Total Raise</Box>
                 </GridItem>
-                <GridItem colSpan="2">
+                <GridItem colSpan={{ base: 4, md: 2 }}>
                   <Box>1,999.79 BUSD</Box>
                 </GridItem>
               </Grid>
@@ -523,10 +588,10 @@ const Home = () => {
                 templateColumns={{ base: "repeat(6,1fr)", xl: "repeat(3,1fr)" }}
                 gap="2"
               >
-                <GridItem>
+                <GridItem colSpan={{ base: 2, md: 1 }}>
                   <Box color="gray.400">Type</Box>
                 </GridItem>
-                <GridItem colSpan="2">
+                <GridItem colSpan={{ base: 4, md: 2 }}>
                   <Box>Claimable</Box>
                 </GridItem>
               </Grid>
@@ -537,10 +602,10 @@ const Home = () => {
                 templateColumns={{ base: "repeat(6,1fr)", xl: "repeat(3,1fr)" }}
                 gap="2"
               >
-                <GridItem>
+                <GridItem colSpan={{ base: 2, md: 1 }}>
                   <Box color="gray.400">Lock Schedule</Box>
                 </GridItem>
-                <GridItem colSpan="2">
+                <GridItem colSpan={{ base: 4, md: 2 }}>
                   <Box>View token release schedule</Box>
                 </GridItem>
               </Grid>
@@ -551,10 +616,10 @@ const Home = () => {
                 templateColumns={{ base: "repeat(6,1fr)", xl: "repeat(3,1fr)" }}
                 gap="2"
               >
-                <GridItem>
+                <GridItem colSpan={{ base: 2, md: 1 }}>
                   <Box color="gray.400">Website</Box>
                 </GridItem>
-                <GridItem colSpan="2">
+                <GridItem colSpan={{ base: 4, md: 2 }} wordBreak="break-word">
                   <Box>https://dopewarz.io/</Box>
                 </GridItem>
               </Grid>
@@ -564,10 +629,10 @@ const Home = () => {
                 templateColumns={{ base: "repeat(6,1fr)", xl: "repeat(3,1fr)" }}
                 gap="2"
               >
-                <GridItem>
+                <GridItem colSpan={{ base: 2, md: 1 }}>
                   <Box color="gray.400">Social</Box>
                 </GridItem>
-                <GridItem colSpan="2">
+                <GridItem colSpan={{ base: 4, md: 2 }}>
                   <Box>View token release schedule</Box>
                 </GridItem>
               </Grid>
@@ -575,20 +640,20 @@ const Home = () => {
 
             <GridItem colSpan="2">
               <Grid templateColumns="repeat(6,1fr)" gap="2">
-                <GridItem>
+                <GridItem colSpan={{ base: 2, md: 1 }}>
                   <Box color="gray.400">Token Claim Time</Box>
                 </GridItem>
-                <GridItem colSpan="5">
+                <GridItem colSpan={{ base: 4, md: 2 }}>
                   <Box>11:30 PM Dec 01, 2021 (GMT+07:00)</Box>
                 </GridItem>
               </Grid>
             </GridItem>
             <GridItem colSpan="2">
               <Grid templateColumns="repeat(6,1fr)" gap="2">
-                <GridItem>
+                <GridItem colSpan={{ base: 2, md: 1 }}>
                   <Box color="gray.400">Pre-order Start Time</Box>
                 </GridItem>
-                <GridItem colSpan="5">
+                <GridItem colSpan={{ base: 4, md: 2 }}>
                   <Box>11:30 PM Dec 01, 2021 (GMT+07:00)</Box>
                 </GridItem>
               </Grid>
@@ -596,10 +661,10 @@ const Home = () => {
 
             <GridItem colSpan="2">
               <Grid templateColumns="repeat(6,1fr)" gap="2">
-                <GridItem>
+                <GridItem colSpan={{ base: 6, md: 1 }}>
                   <Box color="gray.400">Project Information</Box>
                 </GridItem>
-                <GridItem colSpan="5">
+                <GridItem colSpan={{ base: 6, md: 5 }}>
                   <Box>
                     DopeWarz is a comprehensive Metaverse, full with a virtual
                     economy that enables people to buy and sell virtual DrugZ to

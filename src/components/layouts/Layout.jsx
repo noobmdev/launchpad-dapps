@@ -88,10 +88,11 @@ export const Layout = ({ children }) => {
         <VStack align="stretch" maxW="72em" flex="1">
           <HStack h="14" align="center">
             <HStack flex="1" justify="flex-end" spacing="4">
-              {isConnected ? (
+              {account ? (
                 <HStack>
                   <Button colorScheme="blue" borderRadius="3em">
-                    {account}
+                    {account.slice(0, 6)}...
+                    {account.slice(account.length - 6, account.length)}
                   </Button>
                 </HStack>
               ) : (

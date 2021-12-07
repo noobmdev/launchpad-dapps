@@ -126,3 +126,33 @@ code {
   word-wrap: unset;
   width: 28px;
 }
+
+@media (max-width: 959.95px) {
+  .timeline {
+    width: calc(100%);
+    flex-direction: column;
+  }
+  .timeline::before {
+    top: 0;
+    left: 10px;
+    width: 5px;
+    height: 100%;
+  }
+  .timeline li {
+    width: calc(100%);
+    flex-direction: row;
+    padding-bottom: 24px;
+  }
+  .timeline li:last-child {
+    padding-bottom: 0;
+  }
+  .timeline li .timeline_name {
+    position: relative;
+    left: 0;
+  }
+  .timeline li .timeline_index {
+    width: 24px;
+    height: 24px;
+    font-size: 16px;
+  }
+}
