@@ -85,6 +85,7 @@ const Home = () => {
     minutes: 0,
     seconds: 0,
   });
+  const [allowanceB, setAllowanceB] = useState();
   const [amountSwap, setAmountSwap] = useState();
   const [needApprove, setNeedApprove] = useState(false);
 
@@ -153,33 +154,43 @@ const Home = () => {
     }
   }, [startTime, totalBought, totalPreOrder]);
 
-  const getAllowanceTokenB = async (value) => {
-    if (!value || !library || !account) return;
-    const reDecimal = /^\d+(\.\d{1,})?$/gi;
-    if (!reDecimal.test(value))
-      return alert("Please enter valid decimal number");
+  useEffect(() => {
+    (() => {
+      if (!library || !account) return;
+      getAllowanceTokenB();
+    })();
+  }, [library, account]);
+
+  useEffect(() => {
+    if (amountSwap && allowanceB) {
+      BigNumber.from(amountSwap).gt(allowanceB)
+        ? setNeedApprove(true)
+        : setNeedApprove(false);
+    }
+  }, [amountSwap, allowanceB]);
+
+  const getAllowanceTokenB = async () => {
+    if (!library || !account) return;
     try {
-      setSwapping(true);
-      const amount = parseUnits(value, 18);
-      setAmountSwap(amount);
       const allowance = await getAllowanceB(library, account);
       console.log("allowance", allowance);
-      if (BigNumber.from(amount).gt(allowance)) {
-        setNeedApprove(true);
-      }
-      setSwapping(false);
+      setAllowanceB(allowance);
     } catch (error) {
-      setSwapping(false);
+      console.error(error);
     }
   };
 
-  const debounceFn = useCallback(debounce(getAllowanceTokenB, 1000), [
-    account,
-    library,
-  ]);
-
   const handleChangeAmountSwap = (e) => {
-    debounceFn(e.target.value);
+    const value = e.target.value;
+    if (!value) {
+      setAmountSwap(undefined);
+      return;
+    }
+    const reDecimal = /^\d+(\.\d{0,})?$/gi;
+    if (!reDecimal.test(value))
+      return alert("Please enter valid decimal number");
+    const amount = parseUnits(value, 18);
+    setAmountSwap(amount);
   };
 
   const handleApprove = async () => {
