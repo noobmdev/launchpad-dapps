@@ -87,8 +87,10 @@ contract PreOrder is Ownable {
     uint256 public tokenAmountPreOrder = 15 * 10**6 * 10**18; // 15000000000000000000000000
     uint256 public totalAmountBought;
     mapping(address => bool) public whitelist;
-    uint32 public startTimeSwap = 1638768985;
-    uint32 public startTimeClaim = 1638768985;
+    uint32 public startTimeSwap;
+    uint32 public startTimeClaim ;
+    uint256 public MAX_TOKEN_B_CAN_BOUGHT = 250 ether; // 250 * 1e18
+    mapping(address => uint256) totalTokenBBought;
     mapping(address => uint256) public pendingTokenAmount;
 
     ClaimBatch[] public claimBatchs;
@@ -96,8 +98,8 @@ contract PreOrder is Ownable {
     mapping(address => uint8) currentClaimBatch;
 
     constructor() {
-        tokenA = IERC20(0xC6C679DD13AD5732eCa77478f3d0A8baD159221b);
-        tokenB = IERC20(0x1b92f04269Bc9413514694ec0Fa5FBCE5CDd6a99);
+        tokenA = IERC20(0xc278D82c43CdE5cE76F60D710F71252f01ed33a9);
+        tokenB = IERC20(0xcb1629E45e2F612249d662cA77eE5B7B0b77Af15);
 
         uint32[12] memory timestamps = [1 minutes, 60 days, 90 days, 120 days, 150 days, 180 days, 210 days, 240 days, 270 days, 300 days, 330 days, 360 days];
         uint16[12] memory claimPercents = [5e3, 5e3, 5e3, 5e3, 1e4, 1e4, 1e4, 1e4, 1e4, 1e4, 1e4, 1e4];
@@ -147,9 +149,12 @@ contract PreOrder is Ownable {
         require(totalAmountBought <= tokenAmountPreOrder, "NOT_ENOUGH_TOKEN_SWAP");
         require(tokenA.balanceOf(address(this)) >= amountA, "NOT_ENOUGH_TOKEN_TO_SWAP");
         uint256 amountB = getAmountIn(amountA);
+         uint256 _amountBBought = totalTokenBBought[_msgSender()] + amountB;
+        require(_amountBBought <= MAX_TOKEN_B_CAN_BOUGHT, "EACH_USER_JUST_ONLY_BUY_MAX_250_BUSD");
+        totalTokenBBought[_msgSender()] = _amountBBought;
         require(tokenB.allowance(_msgSender(), address(this)) >= amountB, "ERC20: ALLOWANCE_NOT_ENOUGH");
         bool success = tokenB.transferFrom(_msgSender(), address(this), amountB);
-        require(success);
+        require(success, "ENOUGH_TOKEN_B_TO_DO_TRANSACTION");
         totalAmountBought += amountA;
         pendingTokenAmount[_msgSender()] += amountA;
     }

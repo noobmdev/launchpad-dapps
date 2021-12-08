@@ -141,7 +141,7 @@ const Home = () => {
       const currentTimestamp = Math.floor(Date.now() / 1000);
       if (
         totalBought &&
-        totalBought?.lt(
+        totalBought?.gt(
           BigNumber.from(parseUnits(totalPreOrder.toString(), 18))
         )
       ) {
