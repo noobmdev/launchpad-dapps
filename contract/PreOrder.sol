@@ -74,106 +74,134 @@ abstract contract Ownable is Context {
 
 
 contract PreOrder is Ownable {
-    IERC20 tokenA; // CAMA
-    IERC20 tokenB; // BUSD
+    struct Pool {
+        string name;
+        bool isActive;
+    }
+
+    struct TokenAB {
+        address tokenA;
+        address tokenB;
+    }
 
     struct ClaimBatch {
         uint32 timestamp;
         uint16 claimPercent; // 1e3 = 1%
     }
 
-    // 1 tokenA = 0.04 tokenB
-    uint256 public tokenPrice = 0.04 ether;
-    uint256 public tokenAmountPreOrder = 15 * 10**6 * 10**18; // 15000000000000000000000000
-    uint256 public totalAmountBought;
-    mapping(address => bool) public whitelist;
-    uint32 public startTimeSwap;
-    uint32 public startTimeClaim ;
-    uint256 public MAX_TOKEN_B_CAN_BOUGHT = 250 ether; // 250 * 1e18
-    mapping(address => uint256) totalTokenBBought;
-    mapping(address => uint256) public pendingTokenAmount;
+    uint256 public totalPools;
+    mapping(uint256 => Pool) public pool;
+    mapping(uint256 => TokenAB) public tokenAB;
+    mapping(uint256 => uint256) public tokenAPrice;
+    mapping(uint256 => uint256) public tokenAmountAPreOrder;
+    mapping(uint256 => uint256) public totalAmountABought;
+    mapping(uint256 => mapping(address => bool)) public whitelist;
+    mapping(uint256 => uint256) public maxTokenBCanBuy;
+    mapping(uint256 => uint256) public startTimeSwap;
+    mapping(uint256 => uint256) public startTimeClaim;
+    mapping(uint256 => mapping(address => uint256)) public totalTokenBBought;
+    mapping(uint256 => mapping(address => uint256)) public pendingTokenAAmount;
+    mapping(uint256 => ClaimBatch[]) public claimBatches;
+    mapping(uint256 => mapping(address => uint8)) public currentClaimBatch;
 
-    ClaimBatch[] public claimBatchs;
-    // address => index of claimBatchs
-    mapping(address => uint8) currentClaimBatch;
-
-    constructor() {
-        tokenA = IERC20(0xc278D82c43CdE5cE76F60D710F71252f01ed33a9);
-        tokenB = IERC20(0xcb1629E45e2F612249d662cA77eE5B7B0b77Af15);
-
-        uint32[12] memory timestamps = [1 minutes, 60 days, 90 days, 120 days, 150 days, 180 days, 210 days, 240 days, 270 days, 300 days, 330 days, 360 days];
-        uint16[12] memory claimPercents = [5e3, 5e3, 5e3, 5e3, 1e4, 1e4, 1e4, 1e4, 1e4, 1e4, 1e4, 1e4];
-
-        for(uint8 i = 0; i < timestamps.length; i++){
-            addClaimBatchs(timestamps[i], claimPercents[i]);
-        }
+    function addPool(
+        string memory _poolName,
+        address _tokenA, 
+        address _tokenB, 
+        uint256 _tokenAPrice, 
+        uint256 _tokenAmountAPreOrder,
+        uint256 _maxTokenBCanBuy
+    ) external onlyOwner {
+        uint256 idx = totalPools;
+        pool[idx] = Pool({
+            name: _poolName,
+            isActive: true
+        });
+        tokenAB[idx] = TokenAB({
+            tokenA: _tokenA,
+            tokenB: _tokenB
+        });
+        tokenAPrice[idx] = _tokenAPrice;
+        tokenAmountAPreOrder[idx] = _tokenAmountAPreOrder;
+        maxTokenBCanBuy[idx] = _maxTokenBCanBuy;
     }
 
-    function addToWhitelist(address _addr) external onlyOwner {
-        require(!whitelist[_addr], "ALREADY_ADDED");
-        whitelist[_addr] = true;
+    modifier isValidPool (uint256 poolIdx) {
+        require(poolIdx < totalPools, "invalid_pool");
+        require(pool[poolIdx].isActive, "inactive_pool");
+        _;
+    }
+
+    function addToWhitelist(uint256 poolIdx, address _addr) external onlyOwner isValidPool(poolIdx) {
+        require(!whitelist[poolIdx][_addr], "alredy_added_whitelist");
+        whitelist[poolIdx][_addr] = true;
     } 
 
-    function addClaimBatchs(uint32 _timestamp, uint16 _claimPercent) public onlyOwner {
-        claimBatchs.push(ClaimBatch({
+    function addClaimBatch(uint256 poolIdx, uint32 _timestamp, uint16 _claimPercent) public onlyOwner isValidPool(poolIdx) {
+        require(_claimPercent <= 1e5, "over_max_percent");
+        claimBatches[poolIdx].push(ClaimBatch({
             timestamp: _timestamp,
             claimPercent: _claimPercent
         }));
     }
 
-    function setStartTimeSwap(uint32 _timestamp) public onlyOwner {
-        startTimeSwap = _timestamp;
+    function setStartTimeSwap(uint256 poolIdx, uint32 _timestamp) public onlyOwner isValidPool(poolIdx) {
+        startTimeSwap[poolIdx] = _timestamp;
     }
 
-    function setStartClaim(uint32 _timestamp) public onlyOwner {
-        require(startTimeSwap != 0, "SWAP_TIME_NOT_SETTED");
-        require(startTimeSwap <= _timestamp, "CLAIM_MUST_BE_GREATER_THAN_SWAP_TIME");
-        startTimeClaim = _timestamp;
+    function setStartClaim(uint256 poolIdx, uint32 _timestamp) public onlyOwner isValidPool(poolIdx) {
+        require(startTimeSwap[poolIdx] != 0, "swap_time_not_set");
+        require(startTimeSwap[poolIdx] <= _timestamp, "claim_time_must_be_greater_than_swap_time");
+        startTimeClaim[poolIdx] = _timestamp;
     }
 
-    function getAmountIn(uint256 amountA) public view returns(uint256) {
-        return amountA*tokenPrice/1e18;
+    function getAmountIn(uint256 poolIdx, uint256 amountA) public view isValidPool(poolIdx) returns(uint256)  {
+        return amountA*tokenAPrice[poolIdx]/1e18;
     }
 
-     function getAmountOut(uint256 amountB) public view returns(uint256) {
-        return amountB*1e18/tokenPrice;
+    function getAmountOut(uint256 poolIdx, uint256 amountB) public view isValidPool(poolIdx) returns(uint256) {
+        return amountB*1e18/tokenAPrice[poolIdx];
     }
 
-    modifier inWhitelist {
-        require(whitelist[_msgSender()], "NOT_IN_WHITELIST");
+    modifier inWhitelist(uint256 poolIdx) {
+        require(whitelist[poolIdx][_msgSender()], "not_in_whitelist_of_pool");
         _;
     }
 
-    function buyPreOrder(uint256 amountA) external inWhitelist {
-        require(startTimeSwap != 0 && startTimeSwap < block.timestamp, "SWAP_TIME_NOT_SETTED_OR_NOT_STARTED");
-        require(totalAmountBought <= tokenAmountPreOrder, "NOT_ENOUGH_TOKEN_SWAP");
-        require(tokenA.balanceOf(address(this)) >= amountA, "NOT_ENOUGH_TOKEN_TO_SWAP");
-        uint256 amountB = getAmountIn(amountA);
-         uint256 _amountBBought = totalTokenBBought[_msgSender()] + amountB;
-        require(_amountBBought <= MAX_TOKEN_B_CAN_BOUGHT, "EACH_USER_JUST_ONLY_BUY_MAX_250_BUSD");
-        totalTokenBBought[_msgSender()] = _amountBBought;
-        require(tokenB.allowance(_msgSender(), address(this)) >= amountB, "ERC20: ALLOWANCE_NOT_ENOUGH");
-        bool success = tokenB.transferFrom(_msgSender(), address(this), amountB);
+    function buyPreOrder(uint256 poolIdx, uint256 amountA) external isValidPool(poolIdx) inWhitelist(poolIdx)  {
+        require(startTimeSwap[poolIdx] != 0 && startTimeSwap[poolIdx] < block.timestamp, "swap_time_not_set_or_not_started");
+        require(totalAmountABought[poolIdx] <= tokenAmountAPreOrder[poolIdx], "reach_maximum_token_in_pool");
+        require(IERC20(tokenAB[poolIdx].tokenA).balanceOf(address(this)) >= amountA, "not_enough_token_in_pool");
+        uint256 amountB = getAmountIn(poolIdx, amountA);
+        address sender = _msgSender();
+        uint256 _amountBBought = totalTokenBBought[poolIdx][sender] + amountB;
+        require(_amountBBought <= maxTokenBCanBuy[poolIdx], "reach_maximum_amount_can_buy");
+        totalTokenBBought[poolIdx][sender] = _amountBBought;
+        IERC20 tokenB = IERC20(tokenAB[poolIdx].tokenB);
+        require(tokenB.allowance(sender, address(this)) >= amountB, "ERC20: ALLOWANCE_NOT_ENOUGH");
+        bool success = tokenB.transferFrom(sender, address(this), amountB);
         require(success, "ENOUGH_TOKEN_B_TO_DO_TRANSACTION");
-        totalAmountBought += amountA;
-        pendingTokenAmount[_msgSender()] += amountA;
+        totalAmountABought[poolIdx] += amountA;
+        pendingTokenAAmount[poolIdx][sender] += amountA;
     }
 
-    function claimPendingToken() external inWhitelist {
-        require(startTimeClaim != 0 && startTimeClaim < block.timestamp, "CLAIM_TIME_NOT_SETTED_OR_NOT_STARTED");
-        require(pendingTokenAmount[_msgSender()] > 0 , "NOT_HAVE_PENDING_TOKEN");
-        uint8 idx = currentClaimBatch[_msgSender()];
-        ClaimBatch memory currentBatch = claimBatchs[idx];
-        uint256 requireTime = uint256(startTimeClaim) + uint256(currentBatch.timestamp);
-        require(requireTime < block.timestamp, "NOT_STARTED_BATCH_CLAIM");
-        uint256 pendingClaim = pendingTokenAmount[_msgSender()] * currentBatch.claimPercent / 1e5;
-        require(pendingTokenAmount[_msgSender()] - pendingClaim >=0, "NOT_ENOUGH_PENDING_TOKEN");
-        pendingTokenAmount[_msgSender()] -= pendingClaim;
-        currentClaimBatch[_msgSender()]++;
-        tokenA.transfer(_msgSender(), pendingClaim);
+    function claimPendingToken(uint256 poolIdx) external isValidPool(poolIdx) inWhitelist(poolIdx) {
+        require(startTimeClaim[poolIdx] != 0 && startTimeClaim[poolIdx] < block.timestamp, "claim_time_not_set_or_not_started");
+        require(pendingTokenAAmount[poolIdx][_msgSender()] > 0 , "not_have_pending_token");
+        uint8 idx = currentClaimBatch[poolIdx][_msgSender()];
+        ClaimBatch memory currentBatch = claimBatches[poolIdx][idx];
+        uint256 requireTime = uint256(startTimeClaim[poolIdx]) + uint256(currentBatch.timestamp);
+        require(requireTime < block.timestamp, "not_started_batch_claim");
+        uint256 pendingClaim = pendingTokenAAmount[poolIdx][_msgSender()] * currentBatch.claimPercent / 1e5;
+        require(pendingTokenAAmount[poolIdx][_msgSender()] - pendingClaim >= 0, "not_have_pending_token");
+        pendingTokenAAmount[poolIdx][_msgSender()] -= pendingClaim;
+        currentClaimBatch[poolIdx][_msgSender()]++;
+        IERC20(tokenAB[poolIdx].tokenA).transfer(_msgSender(), pendingClaim);
     }
 
-    function withdrawAllTokenAB() external onlyOwner {
+    function withdrawAllTokenAB(uint256 poolIdx) external onlyOwner isValidPool(poolIdx) {
+        IERC20 tokenA = IERC20(tokenAB[poolIdx].tokenA);
+        IERC20 tokenB = IERC20(tokenAB[poolIdx].tokenB);
         tokenA.transfer(_msgSender(), tokenA.balanceOf(address(this)));
         tokenB.transfer(_msgSender(), tokenB.balanceOf(address(this)));
     }
