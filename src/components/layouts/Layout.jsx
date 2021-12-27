@@ -1,15 +1,20 @@
-import { Button } from "@chakra-ui/button";
-import { useDisclosure } from "@chakra-ui/hooks";
-import Icon from "@chakra-ui/icon";
-import { Box, Grid, HStack, Text, VStack } from "@chakra-ui/layout";
 import {
+  Box,
+  Button,
+  Grid,
+  HStack,
+  Icon,
   Modal,
   ModalBody,
   ModalCloseButton,
   ModalContent,
   ModalHeader,
   ModalOverlay,
-} from "@chakra-ui/modal";
+  Text,
+  useDisclosure,
+  VStack,
+} from "@chakra-ui/react";
+import { ReactComponent as LogoIcon } from "assets/images/logo.svg";
 import { ReactComponent as MetamaskIcon } from "assets/images/metamask.svg";
 import { ReactComponent as WalletConnectIcon } from "assets/images/walletconnect.svg";
 import { injected, walletconnect } from "connectors";
@@ -17,19 +22,23 @@ import { useWallet } from "connectors/hooks";
 import { useActiveWeb3React } from "hooks/useActiveWeb3React";
 import React from "react";
 import { RiWallet3Fill } from "react-icons/ri";
+import { Link, useLocation } from "react-router-dom";
 import "styles/Layout.css";
+
+const menu = [
+  { name: "Projects", path: "/projects" },
+  { name: "Staking", path: "/staking" },
+  { name: "About", path: "/about" },
+];
 
 export const Layout = ({ children }) => {
   const { account, isConnected } = useActiveWeb3React();
   const { connect } = useWallet();
-
+  const location = useLocation();
   const { isOpen, onOpen, onClose } = useDisclosure();
 
   return (
-    <Box
-      minH="100vh"
-      bg="radial-gradient(50% 50% at 50% 50%, rgb(34, 34, 40) 0%, rgb(4, 7, 25) 100%);"
-    >
+    <>
       <Modal size="sm" isOpen={isOpen && !isConnected} onClose={onClose}>
         <ModalOverlay />
         <ModalContent>
@@ -75,41 +84,76 @@ export const Layout = ({ children }) => {
         </ModalContent>
       </Modal>
 
-      <HStack
-        align="flex-start"
-        justify="center"
-        minH="100vh"
-        px="8"
-        py="4"
-        bgImage="https://res.cloudinary.com/munumber2/image/upload/v1638481640/bg_ozlucl.svg"
-        bgSize="100% auto"
-        bgPos="0px 90px"
-      >
-        <VStack align="stretch" maxW="72em" flex="1">
-          <HStack h="14" align="center">
-            <HStack flex="1" justify="flex-end" spacing="4">
-              {account ? (
-                <HStack>
-                  <Button colorScheme="blue" borderRadius="3em">
-                    {account.slice(0, 6)}...
-                    {account.slice(account.length - 6, account.length)}
-                  </Button>
-                </HStack>
-              ) : (
-                <Button
-                  leftIcon={<Icon as={RiWallet3Fill} w="6" h="6" />}
-                  colorScheme="blue"
-                  borderRadius="3em"
-                  onClick={onOpen}
-                >
-                  Connect wallet
-                </Button>
-              )}
+      <VStack minH="100vh" align="stretch">
+        <HStack
+          h="14"
+          justify="space-between"
+          spacing="4"
+          px="5"
+          pos="relative"
+          borderBottom="1px solid #E2E8F0"
+        >
+          <HStack>
+            <Link to="/">
+              <HStack>
+                <LogoIcon />
+                <Box fontSize="xl" fontWeight="bold">
+                  Marstarter
+                </Box>
+              </HStack>
+            </Link>
+            <HStack pl="24" spacing="8">
+              {menu.map((e, idx) => (
+                <Link key={idx} to={e.path}>
+                  <Box
+                    py="4"
+                    borderBottom={
+                      location.pathname.includes(e.path)
+                        ? "2px solid #171923"
+                        : "none"
+                    }
+                  >
+                    {e.name}
+                  </Box>
+                </Link>
+              ))}
             </HStack>
           </HStack>
-          <Box flex="1">{children}</Box>
-        </VStack>
-      </HStack>
-    </Box>
+          {account ? (
+            <HStack>
+              <Button
+                bg="gray.900"
+                color="white"
+                size="sm"
+                borderRadius="md"
+                _hover={{
+                  bg: "gray.700",
+                }}
+              >
+                {account.slice(0, 6)}...
+                {account.slice(account.length - 6, account.length)}
+              </Button>
+            </HStack>
+          ) : (
+            <Button
+              leftIcon={<Icon as={RiWallet3Fill} w="6" h="6" />}
+              bg="gray.900"
+              color="white"
+              size="sm"
+              borderRadius="md"
+              _hover={{
+                bg: "gray.700",
+              }}
+              onClick={onOpen}
+            >
+              Connect wallet
+            </Button>
+          )}
+        </HStack>
+        <Box flex="1" px="40" py="6">
+          {children}
+        </Box>
+      </VStack>
+    </>
   );
 };
