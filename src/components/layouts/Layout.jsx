@@ -26,7 +26,7 @@ import { Link, useLocation } from "react-router-dom";
 import "styles/Layout.css";
 
 const menu = [
-  { name: "Projects", path: "/projects" },
+  { name: "Projects", path: "/projects/0" },
   { name: "Staking", path: "/staking" },
   { name: "About", path: "/about" },
 ];
@@ -136,7 +136,6 @@ export const Layout = ({ children }) => {
             </HStack>
           ) : (
             <Button
-              leftIcon={<Icon as={RiWallet3Fill} w="6" h="6" />}
               bg="gray.900"
               color="white"
               size="sm"
@@ -150,7 +149,7 @@ export const Layout = ({ children }) => {
             </Button>
           )}
         </HStack>
-        <Box flex="1" px="40" py="6">
+        <Box flex="1" px="40" py="10">
           {children}
         </Box>
       </VStack>
