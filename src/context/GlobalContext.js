@@ -1,7 +1,7 @@
 import React, { createContext, useReducer } from "react";
 
 import { AppReducer } from "./AppReducer";
-import { LOGOUT, SET_LANGUAGE, SET_USER } from "./types";
+import { LOGOUT, SET_LANGUAGE, SET_POOLS, SET_USER } from "./types";
 // import ToastNotify from 'components/common/ToastNotify';
 
 // init state
@@ -9,6 +9,7 @@ const initState = {
   isAuthenticated: false,
   user: {},
   language: "en",
+  pools: [],
 };
 
 // create context
@@ -40,16 +41,21 @@ export const GlobalProvider = ({ children }) => {
     });
   }
 
+  function setPools(pools) {
+    dispatch({
+      type: SET_POOLS,
+      payload: pools,
+    });
+  }
+
   return (
     <GlobalContext.Provider
       value={{
-        language: state.language,
-        isAuthenticated: state.isAuthenticated,
-        user: state.user,
-        loading: state.loading,
+        ...state,
         setLanguage,
         setCurrentUser,
         logout,
+        setPools,
       }}
     >
       {children}

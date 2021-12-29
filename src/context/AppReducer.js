@@ -1,4 +1,4 @@
-import { LOGOUT, SET_LANGUAGE, SET_USER } from "./types";
+import { LOGOUT, SET_LANGUAGE, SET_POOLS, SET_USER } from "./types";
 
 export const AppReducer = (state, action) => {
   switch (action.type) {
@@ -20,6 +20,12 @@ export const AppReducer = (state, action) => {
         ...state,
         isAuthenticated: false,
         user: {},
+      };
+
+    case SET_POOLS:
+      return {
+        ...state,
+        pools: [...action.payload],
       };
 
     default:

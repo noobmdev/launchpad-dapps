@@ -74,11 +74,6 @@ abstract contract Ownable is Context {
 
 
 contract PreOrder is Ownable {
-    struct Pool {
-        string name;
-        bool isActive;
-    }
-
     struct TokenAB {
         address tokenA;
         address tokenB;
@@ -89,34 +84,49 @@ contract PreOrder is Ownable {
         uint16 claimPercent; // 1e3 = 1%
     }
 
+    struct Time {
+        uint32 from;
+        uint32 duration;
+    }
+
     uint256 public totalPools;
-    mapping(uint256 => Pool) public pool;
+    mapping(uint256 => bool) public isActivePool;
     mapping(uint256 => TokenAB) public tokenAB;
     mapping(uint256 => uint256) public tokenAPrice;
     mapping(uint256 => uint256) public tokenAmountAPreOrder;
     mapping(uint256 => uint256) public totalAmountABought;
     mapping(uint256 => mapping(address => bool)) public whitelist;
     mapping(uint256 => uint256) public maxTokenBCanBuy;
-    mapping(uint256 => uint256) public startTimeSwap;
-    mapping(uint256 => uint256) public startTimeClaim;
+    mapping(uint256 => uint32) public startTime;
+    mapping(uint256 => Time) public startTimeSwap;
+    mapping(uint256 => uint32) public startTimeClaim;
     mapping(uint256 => mapping(address => uint256)) public totalTokenBBought;
     mapping(uint256 => mapping(address => uint256)) public pendingTokenAAmount;
     mapping(uint256 => ClaimBatch[]) public claimBatches;
     mapping(uint256 => mapping(address => uint8)) public currentClaimBatch;
 
+    modifier isValidPool (uint256 poolIdx) {
+        require(poolIdx < totalPools, "invalid_pool");
+        require(isActivePool[poolIdx], "inactive_pool");
+        _;
+    }
+
     function addPool(
-        string memory _poolName,
         address _tokenA, 
         address _tokenB, 
         uint256 _tokenAPrice, 
         uint256 _tokenAmountAPreOrder,
-        uint256 _maxTokenBCanBuy
+        uint256 _maxTokenBCanBuy,
+        uint32 _startTime,
+        uint32 _startTimeSwapFrom,
+        uint32 _startTimeSwapDuration,
+        uint32 _startTimeClaim
     ) external onlyOwner {
+        require(_startTime != 0 || _startTimeSwapFrom != 0 || _startTimeSwapDuration != 0 || _startTimeClaim != 0, "time_must_not_zero");
+        require(_startTime <= _startTimeSwapFrom, "swap_time_must_be_greater_than_start_time_of_pool");
+        require(_startTimeSwapFrom + _startTimeSwapDuration <= _startTimeClaim, "claim_time_must_be_greater_than_swap_time");
         uint256 idx = totalPools;
-        pool[idx] = Pool({
-            name: _poolName,
-            isActive: true
-        });
+        isActivePool[idx] = true;
         tokenAB[idx] = TokenAB({
             tokenA: _tokenA,
             tokenB: _tokenB
@@ -124,12 +134,13 @@ contract PreOrder is Ownable {
         tokenAPrice[idx] = _tokenAPrice;
         tokenAmountAPreOrder[idx] = _tokenAmountAPreOrder;
         maxTokenBCanBuy[idx] = _maxTokenBCanBuy;
-    }
-
-    modifier isValidPool (uint256 poolIdx) {
-        require(poolIdx < totalPools, "invalid_pool");
-        require(pool[poolIdx].isActive, "inactive_pool");
-        _;
+        startTime[idx] = _startTime;
+        startTimeSwap[idx] = Time({
+            from: _startTimeSwapFrom,
+            duration: _startTimeSwapDuration
+        });
+        startTimeClaim[idx] = _startTimeClaim;
+        totalPools++;
     }
 
     function addToWhitelist(uint256 poolIdx, address _addr) external onlyOwner isValidPool(poolIdx) {
@@ -145,14 +156,18 @@ contract PreOrder is Ownable {
         }));
     }
 
-    function setStartTimeSwap(uint256 poolIdx, uint32 _timestamp) public onlyOwner isValidPool(poolIdx) {
-        startTimeSwap[poolIdx] = _timestamp;
+    function setStartTimeSwap(uint256 poolIdx, uint32 _from, uint32 _duration) public onlyOwner isValidPool(poolIdx) {
+        require(startTime[poolIdx] <= _from, "swap_time_must_be_greater_than_start_time_of_pool");
+        startTimeSwap[poolIdx] = Time({
+            from: _from,
+            duration: _duration
+        });
     }
 
-    function setStartClaim(uint256 poolIdx, uint32 _timestamp) public onlyOwner isValidPool(poolIdx) {
-        require(startTimeSwap[poolIdx] != 0, "swap_time_not_set");
-        require(startTimeSwap[poolIdx] <= _timestamp, "claim_time_must_be_greater_than_swap_time");
-        startTimeClaim[poolIdx] = _timestamp;
+    function setStartTimeClaim(uint256 poolIdx, uint32 _from) public onlyOwner isValidPool(poolIdx) {
+        require(startTimeSwap[poolIdx].from != 0, "swap_time_not_set");
+        require(startTimeSwap[poolIdx].from + startTimeSwap[poolIdx].duration <= _from, "claim_time_must_be_greater_than_swap_time");
+        startTimeClaim[poolIdx] = _from;
     }
 
     function getAmountIn(uint256 poolIdx, uint256 amountA) public view isValidPool(poolIdx) returns(uint256)  {
@@ -168,11 +183,12 @@ contract PreOrder is Ownable {
         _;
     }
 
-    function buyPreOrder(uint256 poolIdx, uint256 amountA) external isValidPool(poolIdx) inWhitelist(poolIdx)  {
-        require(startTimeSwap[poolIdx] != 0 && startTimeSwap[poolIdx] < block.timestamp, "swap_time_not_set_or_not_started");
+    function buyPreOrder(uint256 poolIdx, uint256 amountB) external isValidPool(poolIdx) inWhitelist(poolIdx)  {
+        uint256 amountA = getAmountOut(poolIdx, amountB);
+        require(startTimeSwap[poolIdx].from != 0 && startTimeSwap[poolIdx].from < block.timestamp, "swap_time_not_set_or_not_started");
+        require(startTimeSwap[poolIdx].from + startTimeSwap[poolIdx].duration > block.timestamp, "swap_time_ended");
         require(totalAmountABought[poolIdx] <= tokenAmountAPreOrder[poolIdx], "reach_maximum_token_in_pool");
         require(IERC20(tokenAB[poolIdx].tokenA).balanceOf(address(this)) >= amountA, "not_enough_token_in_pool");
-        uint256 amountB = getAmountIn(poolIdx, amountA);
         address sender = _msgSender();
         uint256 _amountBBought = totalTokenBBought[poolIdx][sender] + amountB;
         require(_amountBBought <= maxTokenBCanBuy[poolIdx], "reach_maximum_amount_can_buy");

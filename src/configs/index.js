@@ -1,19 +1,46 @@
-export const PRE_ORDER_ADDRESS = "0xcf38152fc94EA19ACCdC7E2D619E39138F50745E";
-export const TOKEN_A_ADDRESS = "0xc278D82c43CdE5cE76F60D710F71252f01ed33a9";
-export const TOKEN_B_ADDRESS = "0xcb1629E45e2F612249d662cA77eE5B7B0b77Af15";
+export const PRE_ORDER_ADDRESS = "0x2C2a91426EfEfB1D6C1963C2730Ec471B2f9d87A";
 
 export const PRE_ORDER_METHODS = {
+  whitelist: "whitelist",
+  totalPools: "totalPools",
+  isActivePool: "isActivePool",
+  tokenAB: "tokenAB",
+  tokenAPrice: "tokenAPrice",
+  tokenAmountAPreOrder: "tokenAmountAPreOrder",
+  totalAmountABought: "totalAmountABought",
+  maxTokenBCanBuy: "maxTokenBCanBuy",
+  startTime: "startTime",
   startTimeSwap: "startTimeSwap",
   startTimeClaim: "startTimeClaim",
-  totalAmountBought: "totalAmountBought",
+  totalTokenBBought: "totalTokenBBought",
+  pendingTokenAAmount: "pendingTokenAAmount",
   currentClaimBatch: "currentClaimBatch",
+  claimBatches: "claimBatches",
   buyPreOrder: "buyPreOrder",
   claimPendingToken: "claimPendingToken",
+  pendingTokenAAmount: "pendingTokenAAmount",
+  totalTokenBBought: "totalTokenBBought",
 };
 
 export const ERC20_METHODS = {
   allowance: "allowance",
   approve: "approve",
+  balanceOf: "balanceOf",
+};
+
+export const POOL_STATUSES = {
+  register: {
+    name: "REGISTER",
+    value: 1,
+  },
+  deposit: {
+    name: "DEPOSIT",
+    value: 2,
+  },
+  claim: {
+    name: "CLAIM",
+    value: 3,
+  },
 };
 
 export const MAX_UINT256 =

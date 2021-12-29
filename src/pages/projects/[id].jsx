@@ -1,27 +1,20 @@
 import { Box, Button, Grid, HStack, Image, VStack } from "@chakra-ui/react";
-import React from "react";
+import { POOL_STATUSES } from "configs";
+import { GlobalContext } from "context/GlobalContext";
+import { useActiveWeb3React } from "hooks/useActiveWeb3React";
+import React, { useContext } from "react";
+import { useMemo } from "react";
+import { useEffect } from "react";
 
 import { useState } from "react";
+import { useParams } from "react-router-dom";
 import { Link } from "react-router-dom";
+import { getTimeRemaining } from "utils";
+import { getWhitelisted } from "utils/callContract";
 import Description from "./components/Description";
 import TokenSale from "./components/TokenSale";
+import Whitelisted from "./components/Whitelisted";
 import Winners from "./components/Winners";
-
-const ProjectStatuses = {
-  register: {
-    name: "REGISTER",
-    value: 0,
-  },
-
-  deposit: {
-    name: "DEPOSIT",
-    value: 1,
-  },
-  claim: {
-    name: "CLAIM",
-    value: 2,
-  },
-};
 
 const ProjectInfo = {
   desc: "Description",
@@ -30,11 +23,53 @@ const ProjectInfo = {
 };
 
 const DetailProject = () => {
-  const [currentProjectStatus, setCurrentProjectStatus] = useState(
-    ProjectStatuses.deposit
-  );
+  const { account, library } = useActiveWeb3React();
+  const { pools } = useContext(GlobalContext);
+  const { id: poolId } = useParams();
+  const pool = pools[poolId];
+
   const [selectedInfo, setSelectedInfo] = useState(ProjectInfo.desc);
-  const [isWhitelisted, setIsWhitelisted] = useState(true);
+  const [isWhitelisted, setIsWhitelisted] = useState(false);
+  const [timeRemaining, setTimeRemaining] = useState({
+    days: 0,
+    hours: 0,
+    minutes: 0,
+    seconds: 0,
+  });
+
+  useEffect(() => {
+    (() => {
+      if (!account || !library || isNaN(poolId)) return;
+      getWhitelisted(library, poolId, account)
+        .then(setIsWhitelisted)
+        .catch(console.error);
+    })();
+  }, [account, library, poolId]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (!pool?.status?.value) return;
+      let timeRemaining;
+      switch (pool.status.value) {
+        case POOL_STATUSES.register.value:
+          if (pool.startTimeSwap.from != 0)
+            timeRemaining = getTimeRemaining(pool.startTimeSwap.from);
+          break;
+        case POOL_STATUSES.deposit.value:
+          timeRemaining = getTimeRemaining(
+            pool.startTimeSwap.from + pool.startTimeSwap.duration
+          );
+          break;
+        case POOL_STATUSES.claim.value:
+          // console.log(pool);
+          break;
+        default:
+          break;
+      }
+      timeRemaining && setTimeRemaining(timeRemaining);
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [pool]);
 
   const renderProjectInfo = () => {
     switch (selectedInfo) {
@@ -52,33 +87,30 @@ const DetailProject = () => {
     }
   };
 
+  const renderStartTime = (status) => {
+    let time;
+    switch (status) {
+      case POOL_STATUSES.register.value:
+        time = new Date(pool.startTime * 1000);
+        break;
+      case POOL_STATUSES.deposit.value:
+        time = new Date(pool.startTimeSwap.from * 1000);
+        break;
+      case POOL_STATUSES.claim.value:
+        time = new Date(pool.startTimeClaim * 1000);
+        break;
+      default:
+        return;
+    }
+    return time.toUTCString(); //10:00 AM UTC 25 Nov 2021
+  };
+
+  if (pools.length < poolId || !pool) return null;
   return (
     <HStack spacing="6" align="flex-start">
       <VStack flex="1" align="stretch" spacing="6">
         <Box>
-          {isWhitelisted && (
-            <VStack align="center" py="8" bg="green.50">
-              <svg
-                width="48"
-                height="48"
-                viewBox="0 0 48 48"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <rect width="48" height="48" rx="24" fill="#C6F6D5" />
-                <path
-                  d="M21.9997 27.172L31.1917 17.979L32.6067 19.393L21.9997 30L15.6357 23.636L17.0497 22.222L21.9997 27.172Z"
-                  fill="#25855A"
-                />
-              </svg>
-              <Box fontSize="xl" fontWeight="semibold">
-                Whitelisted
-              </Box>
-              <Box color="gray.500">
-                Your wallet is whitelisted and you can join token sale.
-              </Box>
-            </VStack>
-          )}
+          <Whitelisted isWhitelisted={isWhitelisted} />
           <HStack justify="space-between">
             <Box fontSize="3em" fontWeight="semibold">
               Warrior Arena
@@ -171,19 +203,22 @@ const DetailProject = () => {
         </HStack>
 
         <Grid templateColumns="repeat(3,1fr)" gap="8">
-          {Object.keys(ProjectStatuses).map((k, idx) => (
+          {Object.keys(POOL_STATUSES).map((k, idx) => (
             <Box
               key={idx}
               flex="1"
               borderTop="4px solid"
               borderColor={
-                currentProjectStatus.value >= ProjectStatuses[k].value
+                pool.status?.value &&
+                pool.status.value >= POOL_STATUSES[k].value
                   ? "gray.900"
                   : "gray.200"
               }
             >
-              <Box fontWeight="semibold">{ProjectStatuses[k].name}</Box>
-              <Box fontSize="0.75em">10:00 AM UTC 25 Nov 2021</Box>
+              <Box fontWeight="semibold">{POOL_STATUSES[k].name}</Box>
+              <Box fontSize="0.75em">
+                {renderStartTime(POOL_STATUSES[k].value)}
+              </Box>
             </Box>
           ))}
         </Grid>
@@ -238,7 +273,8 @@ const DetailProject = () => {
         </Box>
 
         {isWhitelisted &&
-        currentProjectStatus.value === ProjectStatuses.deposit.value ? (
+        pool.status?.value &&
+        pool.status.value >= POOL_STATUSES.deposit.value ? (
           <Link to="/projects/0/join">
             <Button
               size="lg"
@@ -255,7 +291,6 @@ const DetailProject = () => {
           </Link>
         ) : (
           <>
-            {" "}
             <Button
               size="lg"
               w="100%"
@@ -284,14 +319,15 @@ const DetailProject = () => {
         )}
         <hr />
         <Box textAlign="center">
-          {currentProjectStatus.value === ProjectStatuses.deposit.value
+          {pool.status?.value &&
+          pool.status.value === POOL_STATUSES.deposit.value
             ? "SALE ENDS IN"
             : "SALE STARTS IN"}
         </Box>
         <HStack align="flex-start" justify="space-between" spacing="0">
           <Box textAlign="center" pos="relative">
             <Box fontWeight="semibold" fontSize="2em" color="black">
-              00
+              {timeRemaining.days.toString().padStart(2, "0")}
             </Box>
             <Box fontSize="xs" color="gray.400">
               Days
@@ -299,7 +335,7 @@ const DetailProject = () => {
           </Box>
           <Box textAlign="center" pos="relative">
             <Box fontWeight="semibold" fontSize="2em" color="black">
-              01
+              {timeRemaining.hours.toString().padStart(2, "0")}
             </Box>
             <Box fontSize="xs" color="gray.400">
               Hours
@@ -307,7 +343,7 @@ const DetailProject = () => {
           </Box>
           <Box textAlign="center" pos="relative">
             <Box fontWeight="semibold" fontSize="2em" color="black">
-              20
+              {timeRemaining.minutes.toString().padStart(2, "0")}
             </Box>
             <Box fontSize="xs" color="gray.400">
               Minutes
@@ -315,7 +351,7 @@ const DetailProject = () => {
           </Box>
           <Box textAlign="center" pos="relative">
             <Box fontWeight="semibold" fontSize="2em" color="black">
-              00
+              {timeRemaining.seconds.toString().padStart(2, "0")}
             </Box>
             <Box fontSize="xs" color="gray.400">
               Seconds

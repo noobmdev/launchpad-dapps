@@ -1,10 +1,5 @@
 [
   {
-    "inputs": [],
-    "stateMutability": "nonpayable",
-    "type": "constructor"
-  },
-  {
     "anonymous": false,
     "inputs": [
       {
@@ -26,6 +21,11 @@
   {
     "inputs": [
       {
+        "internalType": "uint256",
+        "name": "poolIdx",
+        "type": "uint256"
+      },
+      {
         "internalType": "uint32",
         "name": "_timestamp",
         "type": "uint32"
@@ -36,13 +36,56 @@
         "type": "uint16"
       }
     ],
-    "name": "addClaimBatchs",
+    "name": "addClaimBatch",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
   },
   {
     "inputs": [
+      {
+        "internalType": "address",
+        "name": "_tokenA",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_tokenB",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_tokenAPrice",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_tokenAmountAPreOrder",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_maxTokenBCanBuy",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint32",
+        "name": "_startTime",
+        "type": "uint32"
+      }
+    ],
+    "name": "addPool",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "poolIdx",
+        "type": "uint256"
+      },
       {
         "internalType": "address",
         "name": "_addr",
@@ -58,7 +101,12 @@
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "amountA",
+        "name": "poolIdx",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amountB",
         "type": "uint256"
       }
     ],
@@ -73,9 +121,14 @@
         "internalType": "uint256",
         "name": "",
         "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
       }
     ],
-    "name": "claimBatchs",
+    "name": "claimBatches",
     "outputs": [
       {
         "internalType": "uint32",
@@ -92,7 +145,13 @@
     "type": "function"
   },
   {
-    "inputs": [],
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "poolIdx",
+        "type": "uint256"
+      }
+    ],
     "name": "claimPendingToken",
     "outputs": [],
     "stateMutability": "nonpayable",
@@ -100,6 +159,35 @@
   },
   {
     "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "currentClaimBatch",
+    "outputs": [
+      {
+        "internalType": "uint8",
+        "name": "",
+        "type": "uint8"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "poolIdx",
+        "type": "uint256"
+      },
       {
         "internalType": "uint256",
         "name": "amountA",
@@ -121,11 +209,54 @@
     "inputs": [
       {
         "internalType": "uint256",
+        "name": "poolIdx",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
         "name": "amountB",
         "type": "uint256"
       }
     ],
     "name": "getAmountOut",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "isActivePool",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "maxTokenBCanBuy",
     "outputs": [
       {
         "internalType": "uint256",
@@ -152,12 +283,17 @@
   {
     "inputs": [
       {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
+      {
         "internalType": "address",
         "name": "",
         "type": "address"
       }
     ],
-    "name": "pendingTokenAmount",
+    "name": "pendingTokenAAmount",
     "outputs": [
       {
         "internalType": "uint256",
@@ -178,8 +314,13 @@
   {
     "inputs": [
       {
+        "internalType": "uint256",
+        "name": "poolIdx",
+        "type": "uint256"
+      },
+      {
         "internalType": "uint32",
-        "name": "_timestamp",
+        "name": "_from",
         "type": "uint32"
       }
     ],
@@ -191,8 +332,18 @@
   {
     "inputs": [
       {
+        "internalType": "uint256",
+        "name": "poolIdx",
+        "type": "uint256"
+      },
+      {
         "internalType": "uint32",
-        "name": "_timestamp",
+        "name": "_from",
+        "type": "uint32"
+      },
+      {
+        "internalType": "uint32",
+        "name": "_duration",
         "type": "uint32"
       }
     ],
@@ -202,7 +353,32 @@
     "type": "function"
   },
   {
-    "inputs": [],
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "startTime",
+    "outputs": [
+      {
+        "internalType": "uint32",
+        "name": "",
+        "type": "uint32"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
     "name": "startTimeClaim",
     "outputs": [
       {
@@ -215,12 +391,23 @@
     "type": "function"
   },
   {
-    "inputs": [],
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
     "name": "startTimeSwap",
     "outputs": [
       {
         "internalType": "uint32",
-        "name": "",
+        "name": "from",
+        "type": "uint32"
+      },
+      {
+        "internalType": "uint32",
+        "name": "duration",
         "type": "uint32"
       }
     ],
@@ -228,8 +415,76 @@
     "type": "function"
   },
   {
-    "inputs": [],
-    "name": "tokenAmountPreOrder",
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "tokenAB",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "tokenA",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "tokenB",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "tokenAPrice",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "tokenAmountAPreOrder",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "totalAmountABought",
     "outputs": [
       {
         "internalType": "uint256",
@@ -242,7 +497,7 @@
   },
   {
     "inputs": [],
-    "name": "tokenPrice",
+    "name": "totalPools",
     "outputs": [
       {
         "internalType": "uint256",
@@ -254,8 +509,19 @@
     "type": "function"
   },
   {
-    "inputs": [],
-    "name": "totalAmountBought",
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "totalTokenBBought",
     "outputs": [
       {
         "internalType": "uint256",
@@ -282,6 +548,11 @@
   {
     "inputs": [
       {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
+      {
         "internalType": "address",
         "name": "",
         "type": "address"
@@ -299,7 +570,13 @@
     "type": "function"
   },
   {
-    "inputs": [],
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "poolIdx",
+        "type": "uint256"
+      }
+    ],
     "name": "withdrawAllTokenAB",
     "outputs": [],
     "stateMutability": "nonpayable",

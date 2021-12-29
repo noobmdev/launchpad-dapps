@@ -19,27 +19,42 @@ import { ReactComponent as MetamaskIcon } from "assets/images/metamask.svg";
 import { ReactComponent as WalletConnectIcon } from "assets/images/walletconnect.svg";
 import { injected, walletconnect } from "connectors";
 import { useWallet } from "connectors/hooks";
+import { GlobalContext } from "context/GlobalContext";
 import { useActiveWeb3React } from "hooks/useActiveWeb3React";
 import React from "react";
-import { RiWallet3Fill } from "react-icons/ri";
+import { useContext } from "react";
+import { useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import "styles/Layout.css";
+import { getPools } from "utils/callContract";
 
 const menu = [
-  { name: "Projects", path: "/projects/0" },
+  { name: "Projects", path: "/projects" },
   { name: "Staking", path: "/staking" },
   { name: "About", path: "/about" },
 ];
 
 export const Layout = ({ children }) => {
-  const { account, isConnected } = useActiveWeb3React();
+  const { account, chainId, library } = useActiveWeb3React();
   const { connect } = useWallet();
   const location = useLocation();
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const { setPools } = useContext(GlobalContext);
+
+  useEffect(() => {
+    (async () => {
+      if (!library) return;
+      getPools(library).then(setPools).catch(console.error);
+    })();
+  }, [library]);
 
   return (
     <>
-      <Modal size="sm" isOpen={isOpen && !isConnected} onClose={onClose}>
+      <Modal
+        size="sm"
+        isOpen={isOpen && !account && !chainId}
+        onClose={onClose}
+      >
         <ModalOverlay />
         <ModalContent>
           <ModalHeader>Connect Wallet</ModalHeader>
@@ -97,12 +112,16 @@ export const Layout = ({ children }) => {
             <Link to="/">
               <HStack>
                 <LogoIcon />
-                <Box fontSize="xl" fontWeight="bold">
+                <Box
+                  fontSize="xl"
+                  fontWeight="bold"
+                  d={{ base: "none", xl: "flex" }}
+                >
                   Marstarter
                 </Box>
               </HStack>
             </Link>
-            <HStack pl="24" spacing="8">
+            <HStack pl="24" spacing="8" d={{ base: "none", xl: "flex" }}>
               {menu.map((e, idx) => (
                 <Link key={idx} to={e.path}>
                   <Box
@@ -149,7 +168,11 @@ export const Layout = ({ children }) => {
             </Button>
           )}
         </HStack>
-        <Box flex="1" px="40" py="10">
+        <Box
+          flex="1"
+          px={{ base: 4, md: 20, xl: 40 }}
+          py={{ base: 2, md: 4, xl: 10 }}
+        >
           {children}
         </Box>
       </VStack>
