@@ -102,6 +102,7 @@ contract PreOrder is Ownable {
     mapping(uint256 => uint32) public startTimeClaim;
     mapping(uint256 => mapping(address => uint256)) public totalTokenBBought;
     mapping(uint256 => mapping(address => uint256)) public pendingTokenAAmount;
+    mapping(uint256 => mapping(address => uint256)) public pendingTokenAAmountClaimed;
     mapping(uint256 => ClaimBatch[]) public claimBatches;
     mapping(uint256 => mapping(address => uint8)) public currentClaimBatch;
 
@@ -154,6 +155,10 @@ contract PreOrder is Ownable {
             timestamp: _timestamp,
             claimPercent: _claimPercent
         }));
+    }
+
+    function getClaimBatches(uint256 poolIdx) external view returns(ClaimBatch[] memory) {
+        return claimBatches[poolIdx];
     }
 
     function setStartTimeSwap(uint256 poolIdx, uint32 _from, uint32 _duration) public onlyOwner isValidPool(poolIdx) {
@@ -211,6 +216,7 @@ contract PreOrder is Ownable {
         uint256 pendingClaim = pendingTokenAAmount[poolIdx][_msgSender()] * currentBatch.claimPercent / 1e5;
         require(pendingTokenAAmount[poolIdx][_msgSender()] - pendingClaim >= 0, "not_have_pending_token");
         pendingTokenAAmount[poolIdx][_msgSender()] -= pendingClaim;
+        pendingTokenAAmountClaimed[poolIdx][_msgSender()] += pendingClaim;
         currentClaimBatch[poolIdx][_msgSender()]++;
         IERC20(tokenAB[poolIdx].tokenA).transfer(_msgSender(), pendingClaim);
     }

@@ -132,7 +132,7 @@ const DetailProject = () => {
   };
 
   const canClaim = (claimTime) => {
-    if (!claimTime || !currentTimestamp) return false;
+    if (!claimTime || !currentTimestamp || !account) return false;
     return claimTime <= currentTimestamp;
   };
 
@@ -149,8 +149,6 @@ const DetailProject = () => {
       setCLaiming(false);
     }
   };
-
-  console.log(claimStatistics);
 
   if (pools.length < poolId || !pool) return null;
   return (
@@ -332,7 +330,7 @@ const DetailProject = () => {
                         {formatTime(claimBatch.timestamp + pool.startTimeClaim)}
                       </Box>
                     </Box>
-                    {claimStatistics?.currentBatch === idx && (
+                    {account && claimStatistics?.currentBatch === idx && (
                       <>
                         {" "}
                         <HStack spacing="4">
