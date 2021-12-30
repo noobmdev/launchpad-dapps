@@ -33,6 +33,7 @@ export const getPools = async (library) => {
           startTime,
           startTimeSwap,
           startTimeClaim,
+          claimBatches,
         ] = await Promise.all([
           callContract(preOrderContract, PRE_ORDER_METHODS.isActivePool, [idx]),
           callContract(preOrderContract, PRE_ORDER_METHODS.tokenAB, [idx]),
@@ -52,25 +53,28 @@ export const getPools = async (library) => {
           callContract(preOrderContract, PRE_ORDER_METHODS.startTimeClaim, [
             idx,
           ]),
-          // callContract(preOrderContract, PRE_ORDER_METHODS.claimBatches, [idx]),
+          callContract(preOrderContract, PRE_ORDER_METHODS.getClaimBatches, [
+            idx,
+          ]),
         ]);
-        let status = POOL_STATUSES.register;
+        let status;
         if (
-          !!startTimeSwap.from &&
-          startTimeSwap.from &&
-          !BigNumber.from(startTimeSwap.from).eq(BigNumber.from("0")) &&
-          !BigNumber.from(startTimeSwap.duration).eq(BigNumber.from("0")) &&
-          BigNumber.from(startTimeSwap.from).lt(currentTimestamp) &&
-          BigNumber.from(startTimeSwap.from)
-            .add(BigNumber.from(startTimeSwap.duration))
-            .gt(currentTimestamp)
+          !!startTime &&
+          startTime > currentTimestamp &&
+          currentTimestamp < startTimeSwap.from
+        ) {
+          status = POOL_STATUSES.register;
+        } else if (
+          (!!startTimeSwap.from &&
+            startTimeSwap.from &&
+            startTimeSwap.from !== 0 &&
+            startTimeSwap.duration !== 0 &&
+            startTimeSwap.from > currentTimestamp &&
+            startTimeSwap.from + startTimeSwap.duration > currentTimestamp) ||
+          currentTimestamp < startTimeClaim
         ) {
           status = POOL_STATUSES.deposit;
-        }
-        if (
-          !BigNumber.from(startTimeClaim).eq(BigNumber.from("0")) &&
-          BigNumber.from(startTimeClaim).lt(currentTimestamp)
-        ) {
+        } else if (startTimeClaim !== 0 && startTimeClaim < currentTimestamp) {
           status = POOL_STATUSES.claim;
         }
         return {
@@ -83,6 +87,7 @@ export const getPools = async (library) => {
           startTimeSwap,
           startTimeClaim,
           status,
+          claimBatches,
         };
       })
     );
@@ -211,6 +216,29 @@ export const buyPreOrder = async (
       poolIdx,
       _amountB,
     ]);
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getClaimStatistics = async (library, poolIdx, account) => {
+  try {
+    const preOrderContract = getPreOrderContract(library);
+    const [claimable, currentBatch] = await Promise.all([
+      callContract(preOrderContract, PRE_ORDER_METHODS.pendingTokenAAmount, [
+        poolIdx,
+        account,
+      ]),
+      callContract(preOrderContract, PRE_ORDER_METHODS.currentClaimBatch, [
+        poolIdx,
+        account,
+      ]),
+    ]);
+    console.log(claimable, currentBatch === 1);
+    return {
+      claimable,
+      currentBatch,
+    };
   } catch (error) {
     throw error;
   }

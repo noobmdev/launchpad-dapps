@@ -1,4 +1,4 @@
-export const PRE_ORDER_ADDRESS = "0x2C2a91426EfEfB1D6C1963C2730Ec471B2f9d87A";
+export const PRE_ORDER_ADDRESS = "0x4671056C1c4b39BAa1424f81B5f6545EF7a63B22";
 
 export const PRE_ORDER_METHODS = {
   whitelist: "whitelist",
@@ -20,6 +20,9 @@ export const PRE_ORDER_METHODS = {
   claimPendingToken: "claimPendingToken",
   pendingTokenAAmount: "pendingTokenAAmount",
   totalTokenBBought: "totalTokenBBought",
+  getClaimBatches: "getClaimBatchs",
+  pendingTokenAAmount: "pendingTokenAAmount",
+  currentClaimBatch: "currentClaimBatch",
 };
 
 export const ERC20_METHODS = {

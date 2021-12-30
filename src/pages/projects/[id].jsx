@@ -1,16 +1,20 @@
 import { Box, Button, Grid, HStack, Image, VStack } from "@chakra-ui/react";
 import { POOL_STATUSES } from "configs";
 import { GlobalContext } from "context/GlobalContext";
+import { formatEther } from "ethers/lib/utils";
 import { useActiveWeb3React } from "hooks/useActiveWeb3React";
 import React, { useContext } from "react";
 import { useMemo } from "react";
 import { useEffect } from "react";
-
 import { useState } from "react";
 import { useParams } from "react-router-dom";
 import { Link } from "react-router-dom";
-import { getTimeRemaining } from "utils";
-import { getWhitelisted } from "utils/callContract";
+import { getTimeRemaining, formatTime } from "utils";
+import {
+  claimPendingToken,
+  getClaimStatistics,
+  getWhitelisted,
+} from "utils/callContract";
 import Description from "./components/Description";
 import TokenSale from "./components/TokenSale";
 import Whitelisted from "./components/Whitelisted";
@@ -30,24 +34,30 @@ const DetailProject = () => {
 
   const [selectedInfo, setSelectedInfo] = useState(ProjectInfo.desc);
   const [isWhitelisted, setIsWhitelisted] = useState(false);
-  const [timeRemaining, setTimeRemaining] = useState({
-    days: 0,
-    hours: 0,
-    minutes: 0,
-    seconds: 0,
-  });
+  const [timeRemaining, setTimeRemaining] = useState();
+  const [claimStatistics, setClaimStatistics] = useState();
+  const [currentTimestamp, setCurrentTimestamp] = useState();
+  const [claiming, setCLaiming] = useState(false);
 
   useEffect(() => {
-    (() => {
+    (async () => {
       if (!account || !library || isNaN(poolId)) return;
-      getWhitelisted(library, poolId, account)
-        .then(setIsWhitelisted)
-        .catch(console.error);
+      try {
+        const [isWhitelisted, _] = await Promise.all([
+          getWhitelisted(library, poolId, account),
+          handleGetClaimStatistics(),
+        ]);
+        setIsWhitelisted(isWhitelisted);
+      } catch (error) {
+        console.error(error);
+      }
     })();
   }, [account, library, poolId]);
 
   useEffect(() => {
     const interval = setInterval(() => {
+      const current = Math.floor(Date.now() / 1e3);
+      setCurrentTimestamp(current);
       if (!pool?.status?.value) return;
       let timeRemaining;
       switch (pool.status.value) {
@@ -66,10 +76,26 @@ const DetailProject = () => {
         default:
           break;
       }
-      timeRemaining && setTimeRemaining(timeRemaining);
+      timeRemaining === null
+        ? setTimeRemaining(undefined)
+        : timeRemaining && setTimeRemaining(timeRemaining);
     }, 1000);
     return () => clearInterval(interval);
   }, [pool]);
+
+  const handleGetClaimStatistics = async () => {
+    if (!account || !library || isNaN(poolId)) return;
+    try {
+      const claimStatistics = await getClaimStatistics(
+        library,
+        poolId,
+        account
+      );
+      setClaimStatistics(claimStatistics);
+    } catch (error) {
+      throw error;
+    }
+  };
 
   const renderProjectInfo = () => {
     switch (selectedInfo) {
@@ -91,19 +117,40 @@ const DetailProject = () => {
     let time;
     switch (status) {
       case POOL_STATUSES.register.value:
-        time = new Date(pool.startTime * 1000);
+        time = pool.startTime;
         break;
       case POOL_STATUSES.deposit.value:
-        time = new Date(pool.startTimeSwap.from * 1000);
+        time = pool.startTimeSwap.from;
         break;
       case POOL_STATUSES.claim.value:
-        time = new Date(pool.startTimeClaim * 1000);
+        time = pool.startTimeClaim;
         break;
       default:
         return;
     }
-    return time.toUTCString(); //10:00 AM UTC 25 Nov 2021
+    return formatTime(time); //10:00 AM UTC 25 Nov 2021
   };
+
+  const canClaim = (claimTime) => {
+    if (!claimTime || !currentTimestamp) return false;
+    return claimTime <= currentTimestamp;
+  };
+
+  const handleClaim = async (poolId) => {
+    if (!account || !library || isNaN(poolId)) return;
+    try {
+      setCLaiming(true);
+      await claimPendingToken(library, poolId, account);
+      handleGetClaimStatistics();
+      setCLaiming(false);
+    } catch (error) {
+      typeof error.data?.message === "string" &&
+        alert(error.data.message.replace("execution reverted: ", ""));
+      setCLaiming(false);
+    }
+  };
+
+  console.log(claimStatistics);
 
   if (pools.length < poolId || !pool) return null;
   return (
@@ -223,6 +270,160 @@ const DetailProject = () => {
           ))}
         </Grid>
 
+        {pool?.status?.value === POOL_STATUSES.claim.value && (
+          <Box>
+            <Box fontSize="1.875em" fontWeight="semibold" pb="2">
+              Vesting
+            </Box>
+
+            <VStack align="stretch">
+              {pool.claimBatches &&
+                pool.claimBatches?.map((claimBatch, idx) => (
+                  <VStack
+                    key={idx}
+                    align="stretch"
+                    spacing="3"
+                    px="8"
+                    py="5"
+                    border="1px solid #E2E8F0"
+                    borderRadius="md"
+                    pos="relative"
+                  >
+                    <Box
+                      pos="absolute"
+                      left="0"
+                      top="8"
+                      transform="translateX(-50%)"
+                    >
+                      <svg
+                        width="40"
+                        height="40"
+                        viewBox="0 0 40 40"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <rect
+                          width="40"
+                          height="40"
+                          rx="20"
+                          fill={
+                            canClaim(claimBatch.timestamp + pool.startTimeClaim)
+                              ? "#C6F6D5"
+                              : "#EDF2F7"
+                          }
+                        />
+                        <path
+                          d="M17.9997 23.172L27.1917 13.979L28.6067 15.393L17.9997 26L11.6357 19.636L13.0497 18.222L17.9997 23.172Z"
+                          fill={
+                            canClaim(claimBatch.timestamp + pool.startTimeClaim)
+                              ? "#25855A"
+                              : "#A0AEC0"
+                          }
+                        />
+                      </svg>
+                    </Box>
+                    <Box>
+                      <Box color="gray.900" fontSize="1.125em" fontWeight="500">
+                        {((claimBatch.claimPercent ?? 0) / 1e3).toFixed(2)}%{" "}
+                        {canClaim(claimBatch.timestamp + pool.startTimeClaim) &&
+                          "- Congratulations"}
+                      </Box>
+                      <Box color="gray.500" fontSize="0.875em">
+                        {formatTime(claimBatch.timestamp + pool.startTimeClaim)}
+                      </Box>
+                    </Box>
+                    {claimStatistics?.currentBatch === idx && (
+                      <>
+                        {" "}
+                        <HStack spacing="4">
+                          <Box
+                            flex="1"
+                            color="gray.700"
+                            p="6"
+                            border="1px solid #E2E8F0"
+                            borderRadius="md"
+                          >
+                            <Box fontSize="0.875em" fontWeight="500">
+                              AVAILABLE
+                            </Box>
+                            <Box fontSize="1.5em" fontWeight="600">
+                              {claimStatistics?.claimable
+                                ? formatEther(
+                                    claimStatistics.claimable.toString()
+                                  )
+                                : "0.000"}{" "}
+                              MARS
+                            </Box>
+                            <Box>100.00%</Box>
+                          </Box>
+                          <Box
+                            flex="1"
+                            color="gray.700"
+                            p="6"
+                            border="1px solid #E2E8F0"
+                            borderRadius="md"
+                          >
+                            <Box fontSize="0.875em" fontWeight="500">
+                              CLAIMABLE
+                            </Box>
+                            <Box fontSize="1.5em" fontWeight="600">
+                              {claimStatistics?.claimable
+                                ? formatEther(
+                                    claimStatistics.claimable.toString()
+                                  )
+                                : "0.000"}{" "}
+                              MARS
+                            </Box>
+                            <Box>100.00%</Box>
+                          </Box>
+                          <Box
+                            flex="1"
+                            color="gray.700"
+                            p="6"
+                            border="1px solid #E2E8F0"
+                            borderRadius="md"
+                          >
+                            <Box fontSize="0.875em" fontWeight="500">
+                              CLAIMED
+                            </Box>
+                            <Box fontSize="1.5em" fontWeight="600">
+                              {claimStatistics?.claimable
+                                ? formatEther(
+                                    claimStatistics.claimable.toString()
+                                  )
+                                : "0.000"}{" "}
+                              MARS
+                            </Box>
+                            <Box>100.00%</Box>
+                          </Box>
+                        </HStack>
+                        <Box textAlign="right">
+                          {canClaim(
+                            claimBatch.timestamp + pool.startTimeClaim
+                          ) && (
+                            <Button
+                              size="sm"
+                              color="white"
+                              borderRadius="md"
+                              bg="green.300"
+                              _hover={{
+                                bg: "green.200",
+                              }}
+                              isLoading={claiming}
+                              onClick={() => handleClaim(poolId)}
+                            >
+                              Claim
+                            </Button>
+                          )}
+                        </Box>
+                      </>
+                    )}
+                  </VStack>
+                ))}
+            </VStack>
+          </Box>
+        )}
+
         <VStack align="stretch" spacing="4">
           <HStack spacing="2">
             {Object.values(ProjectInfo).map((v, idx) => (
@@ -317,47 +518,52 @@ const DetailProject = () => {
             </Button>
           </>
         )}
-        <hr />
-        <Box textAlign="center">
-          {pool.status?.value &&
-          pool.status.value === POOL_STATUSES.deposit.value
-            ? "SALE ENDS IN"
-            : "SALE STARTS IN"}
-        </Box>
-        <HStack align="flex-start" justify="space-between" spacing="0">
-          <Box textAlign="center" pos="relative">
-            <Box fontWeight="semibold" fontSize="2em" color="black">
-              {timeRemaining.days.toString().padStart(2, "0")}
+        {timeRemaining && (
+          <>
+            {" "}
+            <hr />
+            <Box textAlign="center">
+              {pool.status?.value &&
+              pool.status.value === POOL_STATUSES.deposit.value
+                ? "SALE ENDS IN"
+                : "SALE STARTS IN"}
             </Box>
-            <Box fontSize="xs" color="gray.400">
-              Days
-            </Box>
-          </Box>
-          <Box textAlign="center" pos="relative">
-            <Box fontWeight="semibold" fontSize="2em" color="black">
-              {timeRemaining.hours.toString().padStart(2, "0")}
-            </Box>
-            <Box fontSize="xs" color="gray.400">
-              Hours
-            </Box>
-          </Box>
-          <Box textAlign="center" pos="relative">
-            <Box fontWeight="semibold" fontSize="2em" color="black">
-              {timeRemaining.minutes.toString().padStart(2, "0")}
-            </Box>
-            <Box fontSize="xs" color="gray.400">
-              Minutes
-            </Box>
-          </Box>
-          <Box textAlign="center" pos="relative">
-            <Box fontWeight="semibold" fontSize="2em" color="black">
-              {timeRemaining.seconds.toString().padStart(2, "0")}
-            </Box>
-            <Box fontSize="xs" color="gray.400">
-              Seconds
-            </Box>
-          </Box>
-        </HStack>
+            <HStack align="flex-start" justify="space-between" spacing="0">
+              <Box textAlign="center" pos="relative">
+                <Box fontWeight="semibold" fontSize="2em" color="black">
+                  {timeRemaining.days.toString().padStart(2, "0")}
+                </Box>
+                <Box fontSize="xs" color="gray.400">
+                  Days
+                </Box>
+              </Box>
+              <Box textAlign="center" pos="relative">
+                <Box fontWeight="semibold" fontSize="2em" color="black">
+                  {timeRemaining.hours.toString().padStart(2, "0")}
+                </Box>
+                <Box fontSize="xs" color="gray.400">
+                  Hours
+                </Box>
+              </Box>
+              <Box textAlign="center" pos="relative">
+                <Box fontWeight="semibold" fontSize="2em" color="black">
+                  {timeRemaining.minutes.toString().padStart(2, "0")}
+                </Box>
+                <Box fontSize="xs" color="gray.400">
+                  Minutes
+                </Box>
+              </Box>
+              <Box textAlign="center" pos="relative">
+                <Box fontWeight="semibold" fontSize="2em" color="black">
+                  {timeRemaining.seconds.toString().padStart(2, "0")}
+                </Box>
+                <Box fontSize="xs" color="gray.400">
+                  Seconds
+                </Box>
+              </Box>
+            </HStack>
+          </>
+        )}
       </VStack>
     </HStack>
   );

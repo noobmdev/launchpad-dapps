@@ -17,6 +17,7 @@ export const formatNumber = (number) =>
  */
 export const getTimeRemaining = (endTime) => {
   const total = endTime * 1000 - Date.now();
+  if (total <= 0) return null;
   const seconds = Math.floor((total / 1000) % 60);
   const minutes = Math.floor((total / 1000 / 60) % 60);
   const hours = Math.floor((total / (1000 * 60 * 60)) % 24);
@@ -27,4 +28,13 @@ export const getTimeRemaining = (endTime) => {
     minutes,
     seconds,
   };
+};
+
+/**
+ *
+ * @param {timestamp} time
+ */
+export const formatTime = (time) => {
+  if (isNaN(time) || !time) return;
+  return new Date(time * 1000).toString();
 };

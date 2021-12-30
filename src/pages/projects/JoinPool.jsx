@@ -93,7 +93,7 @@ const JoinPool = () => {
       setJoinedSuccess(true);
     } catch (error) {
       console.error(error);
-      if (typeof error.data?.message === "string")
+      typeof error.data?.message === "string" &&
         alert(error.data.message.replace("execution reverted: ", ""));
       setSubmitting(false);
       setSubmitting(false);
