@@ -39,14 +39,14 @@ export const Layout = ({ children }) => {
   const { connect } = useWallet();
   const location = useLocation();
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const { setPools } = useContext(GlobalContext);
+  const { setPools, user } = useContext(GlobalContext);
 
   useEffect(() => {
     (async () => {
       if (!library) return;
-      getPools(library).then(setPools).catch(console.error);
+      getPools(library, account).then(setPools).catch(console.error);
     })();
-  }, [library]);
+  }, [library, account]);
 
   return (
     <>

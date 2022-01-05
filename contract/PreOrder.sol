@@ -90,6 +90,7 @@ contract PreOrder is Ownable {
     }
 
     uint256 public totalPools;
+    address public WETH;
     mapping(uint256 => bool) public isActivePool;
     mapping(uint256 => TokenAB) public tokenAB;
     mapping(uint256 => uint256) public tokenAPrice;
@@ -105,6 +106,10 @@ contract PreOrder is Ownable {
     mapping(uint256 => mapping(address => uint256)) public pendingTokenAAmountClaimed;
     mapping(uint256 => ClaimBatch[]) public claimBatches;
     mapping(uint256 => mapping(address => uint8)) public currentClaimBatch;
+
+    constructor(address _weth) {
+        WETH = _weth;
+    }
 
     modifier isValidPool (uint256 poolIdx) {
         require(poolIdx < totalPools, "invalid_pool");
@@ -123,6 +128,7 @@ contract PreOrder is Ownable {
         uint32 _startTimeSwapDuration,
         uint32 _startTimeClaim
     ) external onlyOwner {
+        require(_tokenA != WETH, "tokenA_cannot_WETH");
         require(_startTime != 0 || _startTimeSwapFrom != 0 || _startTimeSwapDuration != 0 || _startTimeClaim != 0, "time_must_not_zero");
         require(_startTime <= _startTimeSwapFrom, "swap_time_must_be_greater_than_start_time_of_pool");
         require(_startTimeSwapFrom + _startTimeSwapDuration <= _startTimeClaim, "claim_time_must_be_greater_than_swap_time");
@@ -188,7 +194,7 @@ contract PreOrder is Ownable {
         _;
     }
 
-    function buyPreOrder(uint256 poolIdx, uint256 amountB) external isValidPool(poolIdx) inWhitelist(poolIdx)  {
+    function _buyPreOrder(uint256 poolIdx, uint256 amountB) private isValidPool(poolIdx) inWhitelist(poolIdx) {
         uint256 amountA = getAmountOut(poolIdx, amountB);
         require(startTimeSwap[poolIdx].from != 0 && startTimeSwap[poolIdx].from < block.timestamp, "swap_time_not_set_or_not_started");
         require(startTimeSwap[poolIdx].from + startTimeSwap[poolIdx].duration > block.timestamp, "swap_time_ended");
@@ -198,12 +204,24 @@ contract PreOrder is Ownable {
         uint256 _amountBBought = totalTokenBBought[poolIdx][sender] + amountB;
         require(_amountBBought <= maxTokenBCanBuy[poolIdx], "reach_maximum_amount_can_buy");
         totalTokenBBought[poolIdx][sender] = _amountBBought;
+        totalAmountABought[poolIdx] += amountA;
+        pendingTokenAAmount[poolIdx][sender] += amountA;
+    }
+
+    function buyPreOrder(uint256 poolIdx, uint256 amountB) external isValidPool(poolIdx) inWhitelist(poolIdx)  {
+        require(tokenAB[poolIdx].tokenB != WETH);
+        address sender = _msgSender();
         IERC20 tokenB = IERC20(tokenAB[poolIdx].tokenB);
         require(tokenB.allowance(sender, address(this)) >= amountB, "ERC20: ALLOWANCE_NOT_ENOUGH");
         bool success = tokenB.transferFrom(sender, address(this), amountB);
         require(success, "ENOUGH_TOKEN_B_TO_DO_TRANSACTION");
-        totalAmountABought[poolIdx] += amountA;
-        pendingTokenAAmount[poolIdx][sender] += amountA;
+        _buyPreOrder(poolIdx, amountB);
+    }
+
+    function buyPreOrderWETH(uint256 poolIdx, uint256 amountB) external isValidPool(poolIdx) inWhitelist(poolIdx) payable {
+        require(tokenAB[poolIdx].tokenB == WETH);
+        require(msg.value >= amountB,"ENOUGH_TOKEN_B_TO_DO_TRANSACTION");
+        _buyPreOrder(poolIdx, amountB);
     }
 
     function claimPendingToken(uint256 poolIdx) external isValidPool(poolIdx) inWhitelist(poolIdx) {

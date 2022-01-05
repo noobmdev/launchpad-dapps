@@ -1,7 +1,8 @@
 import { Box, Button, Grid, HStack, VStack } from "@chakra-ui/react";
 import { POOL_STATUSES } from "configs";
 import { GlobalContext } from "context/GlobalContext";
-import React, { useContext } from "react";
+import { formatEther, parseEther } from "ethers/lib/utils";
+import React, { useContext, useMemo } from "react";
 import { Link } from "react-router-dom";
 
 const Projects = () => {
@@ -61,18 +62,24 @@ const Projects = () => {
             </HStack>
             <HStack justify="space-between">
               <Box>Available Now</Box>
-              <Box color="gray,500">0.00 MARS</Box>
+              <Box color="gray,500">
+                {pool.pendingTokenAAmount
+                  ? formatEther(pool.pendingTokenAAmount.toString())
+                  : "0.0"}{" "}
+                MARS
+              </Box>
             </HStack>
             <HStack justify="space-between">
               <Box>Claimed</Box>
-              <Box color="gray,500">0.00 MARS</Box>
+              <Box color="gray,500">
+                {pool.pendingTokenAAmountClaimed
+                  ? formatEther(pool.pendingTokenAAmountClaimed.toString())
+                  : "0.0"}{" "}
+                MARS
+              </Box>
             </HStack>
             <HStack justify="space-between">
-              <Box>Total</Box>
-              <Box color="gray,500">0.00 MARS</Box>
-            </HStack>
-            <HStack justify="space-between">
-              <Box>Contribution</Box>
+              <Box>Claimable in Batch</Box>
               <Box color="gray,500">0.00 MARS</Box>
             </HStack>
             <HStack justify="space-between">

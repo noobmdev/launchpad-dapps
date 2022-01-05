@@ -1,4 +1,7 @@
-export const PRE_ORDER_ADDRESS = "0x4671056C1c4b39BAa1424f81B5f6545EF7a63B22";
+export const PRE_ORDER_ADDRESS = "0x811a3A7ac224BD2A7A54C0E99C8E97627F0A087e";
+
+export const WETH = "0xae13d989dac2f0debff460ac112a837c89baa7cd";
+export const WETH_SYMBOL = "BNB";
 
 export const PRE_ORDER_METHODS = {
   whitelist: "whitelist",
@@ -12,16 +15,13 @@ export const PRE_ORDER_METHODS = {
   startTime: "startTime",
   startTimeSwap: "startTimeSwap",
   startTimeClaim: "startTimeClaim",
-  totalTokenBBought: "totalTokenBBought",
-  pendingTokenAAmount: "pendingTokenAAmount",
-  currentClaimBatch: "currentClaimBatch",
-  claimBatches: "claimBatches",
   buyPreOrder: "buyPreOrder",
+  buyPreOrderWETH: "buyPreOrderWETH",
   claimPendingToken: "claimPendingToken",
   pendingTokenAAmount: "pendingTokenAAmount",
+  pendingTokenAAmountClaimed: "pendingTokenAAmountClaimed",
   totalTokenBBought: "totalTokenBBought",
-  getClaimBatches: "getClaimBatchs",
-  pendingTokenAAmount: "pendingTokenAAmount",
+  getClaimBatches: "getClaimBatches",
   currentClaimBatch: "currentClaimBatch",
 };
 
@@ -29,6 +29,7 @@ export const ERC20_METHODS = {
   allowance: "allowance",
   approve: "approve",
   balanceOf: "balanceOf",
+  symbol: "symbol",
 };
 
 export const POOL_STATUSES = {

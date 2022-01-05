@@ -4,6 +4,8 @@ import {
   POOL_STATUSES,
   PRE_ORDER_ADDRESS,
   PRE_ORDER_METHODS,
+  WETH,
+  WETH_SYMBOL,
 } from "configs";
 import { BigNumber } from "ethers";
 import { parseEther } from "ethers/lib/utils";
@@ -13,7 +15,7 @@ import {
   getERC20Contract,
 } from "hooks/useContract";
 
-export const getPools = async (library) => {
+export const getPools = async (library, account = undefined) => {
   try {
     const preOrderContract = getPreOrderContract(library);
     const totalPools = await callContract(
@@ -34,6 +36,8 @@ export const getPools = async (library) => {
           startTimeSwap,
           startTimeClaim,
           claimBatches,
+          pendingTokenAAmount,
+          pendingTokenAAmountClaimed,
         ] = await Promise.all([
           callContract(preOrderContract, PRE_ORDER_METHODS.isActivePool, [idx]),
           callContract(preOrderContract, PRE_ORDER_METHODS.tokenAB, [idx]),
@@ -56,6 +60,20 @@ export const getPools = async (library) => {
           callContract(preOrderContract, PRE_ORDER_METHODS.getClaimBatches, [
             idx,
           ]),
+          ...(account
+            ? [
+                callContract(
+                  preOrderContract,
+                  PRE_ORDER_METHODS.pendingTokenAAmount,
+                  [idx, account]
+                ),
+                callContract(
+                  preOrderContract,
+                  PRE_ORDER_METHODS.pendingTokenAAmountClaimed,
+                  [idx, account]
+                ),
+              ]
+            : [undefined, undefined]),
         ]);
         let status;
         if (
@@ -88,6 +106,8 @@ export const getPools = async (library) => {
           startTimeClaim,
           status,
           claimBatches,
+          pendingTokenAAmount,
+          pendingTokenAAmountClaimed,
         };
       })
     );
@@ -147,8 +167,24 @@ export const getAllowance = async (library, erc20Address, owner, spender) => {
 
 export const getTokenBalance = async (library, erc20Address, account) => {
   try {
+    if (!library || !erc20Address || !account) return;
+    if (erc20Address.toLowerCase() === WETH.toLowerCase()) {
+      const balance = await library.getBalance(account);
+      return {
+        balance,
+        symbol: WETH_SYMBOL,
+      };
+    }
+
     const erc20Contract = getERC20Contract(library, erc20Address);
-    return callContract(erc20Contract, ERC20_METHODS.balanceOf, [account]);
+    const [symbol, balance] = await Promise.all([
+      callContract(erc20Contract, ERC20_METHODS.symbol, []),
+      callContract(erc20Contract, ERC20_METHODS.balanceOf, [account]),
+    ]);
+    return {
+      balance,
+      symbol,
+    };
   } catch (error) {
     throw error;
   }
@@ -202,20 +238,24 @@ export const buyPreOrder = async (
     )
       return;
     const _amountB = parseEther(amountB);
-    const allowance = await getAllowance(
-      library,
-      tokenB,
-      PRE_ORDER_ADDRESS,
-      account
-    );
-    if (allowance.lt(_amountB)) {
-      await approve(library, account, tokenB, PRE_ORDER_ADDRESS, MAX_UINT256);
+    const isWETH = tokenB.toLowerCase() === WETH.toLowerCase();
+    if (!isWETH) {
+      const allowance = await getAllowance(
+        library,
+        tokenB,
+        PRE_ORDER_ADDRESS,
+        account
+      );
+      if (allowance.lt(_amountB)) {
+        await approve(library, account, tokenB, PRE_ORDER_ADDRESS, MAX_UINT256);
+      }
     }
+    const method = isWETH
+      ? PRE_ORDER_METHODS.buyPreOrderWETH
+      : PRE_ORDER_METHODS.buyPreOrder;
+    const params = isWETH ? { value: _amountB } : {};
     const preOrderContract = getPreOrderContract(library, account);
-    return callContract(preOrderContract, PRE_ORDER_METHODS.buyPreOrder, [
-      poolIdx,
-      _amountB,
-    ]);
+    return callContract(preOrderContract, method, [poolIdx, _amountB], params);
   } catch (error) {
     throw error;
   }
@@ -234,7 +274,7 @@ export const getClaimStatistics = async (library, poolIdx, account) => {
         account,
       ]),
     ]);
-    console.log(claimable, currentBatch === 1);
+    // console.log(claimable, currentBatch === 1);
     return {
       claimable,
       currentBatch,

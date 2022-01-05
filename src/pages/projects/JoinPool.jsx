@@ -246,7 +246,11 @@ const JoinPool = () => {
                       </Button>
                     </HStack>
                     <Box color="gray.500" mt="2">
-                      Balance: {formatEther(balanceB.toString())} BUSD
+                      Balance:{" "}
+                      {balanceB.balance
+                        ? formatEther(balanceB.balance.toString())
+                        : "0.0"}{" "}
+                      {balanceB?.symbol}
                     </Box>
                     <Box pos="absolute" bottom="-5" left="50%">
                       <svg

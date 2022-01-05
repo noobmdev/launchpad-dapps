@@ -362,7 +362,7 @@ const DetailProject = () => {
                             borderRadius="md"
                           >
                             <Box fontSize="0.875em" fontWeight="500">
-                              CLAIMABLE
+                              CLAIMABLE IN BATCH
                             </Box>
                             <Box fontSize="1.5em" fontWeight="600">
                               {claimStatistics?.claimable
@@ -474,7 +474,7 @@ const DetailProject = () => {
         {isWhitelisted &&
         pool.status?.value &&
         pool.status.value >= POOL_STATUSES.deposit.value ? (
-          <Link to="/projects/0/join">
+          <Link to={`/projects/${poolId}/join`}>
             <Button
               size="lg"
               w="100%"
