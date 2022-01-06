@@ -6,6 +6,7 @@ import {
   Button,
   HStack,
   Input,
+  useToast,
   VStack,
 } from "@chakra-ui/react";
 import { GlobalContext } from "context/GlobalContext";
@@ -28,6 +29,7 @@ const JoinPool = () => {
   const { account, library } = useActiveWeb3React();
   const { pools } = useContext(GlobalContext);
   const { id: poolId } = useParams();
+  const toast = useToast();
   const pool = pools[poolId];
 
   const [isWhitelisted, setIsWhitelisted] = useState(false);
@@ -94,7 +96,13 @@ const JoinPool = () => {
     } catch (error) {
       console.error(error);
       typeof error.data?.message === "string" &&
-        alert(error.data.message.replace("execution reverted: ", ""));
+        toast({
+          title: "Transaction Error",
+          description: error.data.message.replace("execution reverted: ", ""),
+          status: "warning",
+          duration: 5000,
+          isClosable: true,
+        });
       setSubmitting(false);
       setSubmitting(false);
     }

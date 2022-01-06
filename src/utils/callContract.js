@@ -24,7 +24,7 @@ export const getPools = async (library, account = undefined) => {
       PRE_ORDER_METHODS.totalPools,
       []
     );
-    const currentTimestamp = BigNumber.from(Math.floor(Date.now() / 1000));
+    const currentTimestamp = Math.floor(Date.now() / 1000);
     return Promise.all(
       new Array(+totalPools).fill("").map(async (_, idx) => {
         const [
@@ -96,7 +96,6 @@ export const getPools = async (library, account = undefined) => {
         } else if (startTimeClaim !== 0 && startTimeClaim < currentTimestamp) {
           status = POOL_STATUSES.claim;
         }
-
         const { tokenA, tokenB } = tokenAB;
 
         const [_tokenA, _tokenB] = await Promise.all([
@@ -275,7 +274,7 @@ export const buyPreOrder = async (
         PRE_ORDER_ADDRESS,
         account
       );
-      if (allowance.lt(_amountB)) {
+      if (allowance.lt(BigNumber.from(_amountB))) {
         await approve(library, account, tokenB, PRE_ORDER_ADDRESS, MAX_UINT256);
       }
     }

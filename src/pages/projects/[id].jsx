@@ -1,4 +1,4 @@
-import { Box, Button, Grid, HStack, Image, VStack } from "@chakra-ui/react";
+import { Box, Button, Grid, HStack, useToast, VStack } from "@chakra-ui/react";
 import { ONE_HUNDRED_PERCENT, POOL_STATUSES } from "configs";
 import { GlobalContext } from "context/GlobalContext";
 import { BigNumber } from "ethers";
@@ -31,6 +31,7 @@ const DetailProject = () => {
   const { account, library } = useActiveWeb3React();
   const { pools } = useContext(GlobalContext);
   const { id: poolId } = useParams();
+  const toast = useToast();
   const pool = pools[poolId];
 
   const [selectedInfo, setSelectedInfo] = useState(ProjectInfo.desc);
@@ -157,7 +158,14 @@ const DetailProject = () => {
       setCLaiming(false);
     } catch (error) {
       typeof error.data?.message === "string" &&
-        alert(error.data.message.replace("execution reverted: ", ""));
+        toast({
+          title: "Transaction Error",
+          description: error.data.message.replace("execution reverted: ", ""),
+          status: "warning",
+          duration: 5000,
+          isClosable: true,
+        });
+
       setCLaiming(false);
     }
   };

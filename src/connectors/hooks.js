@@ -3,6 +3,7 @@ import { UnsupportedChainIdError, useWeb3React } from "@web3-react/core";
 
 import { injected } from "./index";
 import { NoEthereumProviderError } from "@web3-react/injected-connector";
+import { useToast } from "@chakra-ui/react";
 
 export function useEagerConnect() {
   const { activate, active } = useWeb3React();
@@ -108,6 +109,7 @@ const setupDefaultNetwork = async () => {
 
 export const useWallet = () => {
   const { activate, deactivate, error } = useWeb3React();
+  const toast = useToast();
   const [currentConnector, setCurrentConnector] = useState();
 
   useEffect(() => {
@@ -124,7 +126,14 @@ export const useWallet = () => {
             "NoEthereumProviderError: Please install metamask extension or visit website in app which has ethereum provider.";
         }
         if (errMessage) {
-          alert(errMessage);
+          // alert(errMessage);
+          toast({
+            title: "Wallet Error",
+            description: errMessage,
+            status: "warning",
+            duration: 5000,
+            isClosable: true,
+          });
         }
       }
     };
