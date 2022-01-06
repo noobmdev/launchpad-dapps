@@ -150,7 +150,13 @@ contract PreOrder is Ownable {
         totalPools++;
     }
 
-    function addToWhitelist(uint256 poolIdx, address _addr) external onlyOwner isValidPool(poolIdx) {
+    function addToWhitelist(uint256 poolIdx, address[] memory _addr) external onlyOwner isValidPool(poolIdx) {
+        for(uint256 i = 0; i < _addr.length; i++) {
+            _addToWhitelist(poolIdx, _addr[i]);
+        }
+    } 
+
+    function _addToWhitelist(uint256 poolIdx, address _addr) private {
         require(!whitelist[poolIdx][_addr], "alredy_added_whitelist");
         whitelist[poolIdx][_addr] = true;
     } 
