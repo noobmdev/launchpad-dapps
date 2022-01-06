@@ -39,8 +39,8 @@ const JoinPool = () => {
 
   const amountA = useMemo(() => {
     if (!pool?.tokenAPrice || isNaN(amountB)) return;
-    if (+amountB === 0) return "0";
-    return BigNumber.from(parseEther(amountB)).div(pool.tokenAPrice);
+    if (+amountB === 0) return "0.0";
+    return amountB / formatEther(pool.tokenAPrice);
   }, [pool, amountB]);
 
   useEffect(() => {

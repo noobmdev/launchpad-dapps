@@ -29,7 +29,9 @@ export const ERC20_METHODS = {
   allowance: "allowance",
   approve: "approve",
   balanceOf: "balanceOf",
+  name: "name",
   symbol: "symbol",
+  decimals: "decimals",
 };
 
 export const POOL_STATUSES = {
@@ -46,6 +48,8 @@ export const POOL_STATUSES = {
     value: 3,
   },
 };
+
+export const ONE_HUNDRED_PERCENT = 100000;
 
 export const MAX_UINT256 =
   "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff";

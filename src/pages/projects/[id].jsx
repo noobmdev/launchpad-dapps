@@ -1,6 +1,7 @@
 import { Box, Button, Grid, HStack, Image, VStack } from "@chakra-ui/react";
-import { POOL_STATUSES } from "configs";
+import { ONE_HUNDRED_PERCENT, POOL_STATUSES } from "configs";
 import { GlobalContext } from "context/GlobalContext";
+import { BigNumber } from "ethers";
 import { formatEther } from "ethers/lib/utils";
 import { useActiveWeb3React } from "hooks/useActiveWeb3React";
 import React, { useContext } from "react";
@@ -82,6 +83,17 @@ const DetailProject = () => {
     }, 1000);
     return () => clearInterval(interval);
   }, [pool]);
+
+  const currentBatchStatus = useMemo(() => {
+    if (!pool || !claimStatistics) return;
+    const currentBatch = pool.claimBatches[claimStatistics.currentBatch];
+    if (!currentBatch?.timestamp || !currentBatch?.claimPercent) return;
+    const date = pool.startTimeClaim + currentBatch.timestamp;
+    const claimableInBatch = claimStatistics.claimable
+      .mul(BigNumber.from(currentBatch.claimPercent))
+      .div(BigNumber.from(ONE_HUNDRED_PERCENT));
+    return { date, claimableInBatch };
+  }, [pool, claimStatistics]);
 
   const handleGetClaimStatistics = async () => {
     if (!account || !library || isNaN(poolId)) return;
@@ -349,10 +361,10 @@ const DetailProject = () => {
                                 ? formatEther(
                                     claimStatistics.claimable.toString()
                                   )
-                                : "0.000"}{" "}
+                                : "0.0"}{" "}
                               MARS
                             </Box>
-                            <Box>100.00%</Box>
+                            {/* <Box>100.00%</Box> */}
                           </Box>
                           <Box
                             flex="1"
@@ -365,14 +377,14 @@ const DetailProject = () => {
                               CLAIMABLE IN BATCH
                             </Box>
                             <Box fontSize="1.5em" fontWeight="600">
-                              {claimStatistics?.claimable
+                              {currentBatchStatus?.claimableInBatch?.toString()
                                 ? formatEther(
-                                    claimStatistics.claimable.toString()
+                                    currentBatchStatus.claimableInBatch.toString()
                                   )
-                                : "0.000"}{" "}
+                                : "0.0"}{" "}
                               MARS
                             </Box>
-                            <Box>100.00%</Box>
+                            {/* <Box>100.00%</Box> */}
                           </Box>
                           <Box
                             flex="1"
@@ -385,14 +397,14 @@ const DetailProject = () => {
                               CLAIMED
                             </Box>
                             <Box fontSize="1.5em" fontWeight="600">
-                              {claimStatistics?.claimable
+                              {claimStatistics?.claimed?.toString()
                                 ? formatEther(
-                                    claimStatistics.claimable.toString()
+                                    claimStatistics.claimed.toString()
                                   )
-                                : "0.000"}{" "}
+                                : "0.0"}{" "}
                               MARS
                             </Box>
-                            <Box>100.00%</Box>
+                            {/* <Box>100.00%</Box> */}
                           </Box>
                         </HStack>
                         <Box textAlign="right">
@@ -459,11 +471,13 @@ const DetailProject = () => {
         <Box>
           <HStack justify="space-between">
             <Box color="gray.700">Rate</Box>
-            <Box>1 MARS = 0.04 BUSD</Box>
+            <Box>
+              1 {pool?.tokenA?.symbol} = 0.04 {pool?.tokenB?.symbol}
+            </Box>
           </HStack>
           <HStack justify="space-between">
             <Box color="gray.700">Deposit</Box>
-            <Box>BUSD</Box>
+            <Box>{pool?.tokenB?.symbol}</Box>
           </HStack>
           <HStack justify="space-between">
             <Box color="gray.700">Tier required</Box>

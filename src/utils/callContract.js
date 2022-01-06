@@ -9,6 +9,7 @@ import {
 } from "configs";
 import { BigNumber } from "ethers";
 import { parseEther } from "ethers/lib/utils";
+import { m } from "framer-motion";
 import {
   callContract,
   getPreOrderContract,
@@ -95,9 +96,19 @@ export const getPools = async (library, account = undefined) => {
         } else if (startTimeClaim !== 0 && startTimeClaim < currentTimestamp) {
           status = POOL_STATUSES.claim;
         }
+
+        const { tokenA, tokenB } = tokenAB;
+
+        const [_tokenA, _tokenB] = await Promise.all([
+          getERC20Info(library, tokenA),
+          getERC20Info(library, tokenB),
+        ]);
+
         return {
           isActivePool,
           tokenAB,
+          tokenA: _tokenA,
+          tokenB: _tokenB,
           tokenAPrice,
           tokenAmountAPreOrder,
           maxTokenBCanBuy,
@@ -148,6 +159,24 @@ export const getTotalAmountBought = async (library) => {
       PRE_ORDER_METHODS.totalAmountBought,
       []
     );
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getERC20Info = async (library, erc20Address) => {
+  try {
+    const erc20Contract = getERC20Contract(library, erc20Address);
+    const [name, symbol, decimals] = await Promise.all([
+      callContract(erc20Contract, ERC20_METHODS.name, []),
+      callContract(erc20Contract, ERC20_METHODS.symbol, []),
+      callContract(erc20Contract, ERC20_METHODS.decimals, []),
+    ]);
+    return {
+      name,
+      symbol,
+      decimals,
+    };
   } catch (error) {
     throw error;
   }
@@ -264,11 +293,16 @@ export const buyPreOrder = async (
 export const getClaimStatistics = async (library, poolIdx, account) => {
   try {
     const preOrderContract = getPreOrderContract(library);
-    const [claimable, currentBatch] = await Promise.all([
+    const [claimable, claimed, currentBatch] = await Promise.all([
       callContract(preOrderContract, PRE_ORDER_METHODS.pendingTokenAAmount, [
         poolIdx,
         account,
       ]),
+      callContract(
+        preOrderContract,
+        PRE_ORDER_METHODS.pendingTokenAAmountClaimed,
+        [poolIdx, account]
+      ),
       callContract(preOrderContract, PRE_ORDER_METHODS.currentClaimBatch, [
         poolIdx,
         account,
@@ -277,6 +311,7 @@ export const getClaimStatistics = async (library, poolIdx, account) => {
     // console.log(claimable, currentBatch === 1);
     return {
       claimable,
+      claimed,
       currentBatch,
     };
   } catch (error) {

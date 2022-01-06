@@ -36,5 +36,5 @@ export const getTimeRemaining = (endTime) => {
  */
 export const formatTime = (time) => {
   if (isNaN(time) || !time) return;
-  return new Date(time * 1000).toString();
+  return new Date(time * 1000).toUTCString();
 };
