@@ -1,9 +1,18 @@
-import { Box, Button, Grid, HStack, useToast, VStack } from "@chakra-ui/react";
+import {
+  Box,
+  Button,
+  Grid,
+  HStack,
+  useToast,
+  VStack,
+  Spinner,
+} from "@chakra-ui/react";
 import { ONE_HUNDRED_PERCENT, POOL_STATUSES } from "configs";
 import { GlobalContext } from "context/GlobalContext";
 import { BigNumber } from "ethers";
 import { formatEther } from "ethers/lib/utils";
 import { useActiveWeb3React } from "hooks/useActiveWeb3React";
+import { usePool } from "hooks/useFetch";
 import React, { useContext } from "react";
 import { useMemo } from "react";
 import { useEffect } from "react";
@@ -29,10 +38,11 @@ const ProjectInfo = {
 
 const DetailProject = () => {
   const { account, library } = useActiveWeb3React();
-  const { pools } = useContext(GlobalContext);
-  const { id: poolId } = useParams();
+  const { slug } = useParams();
   const toast = useToast();
-  const pool = pools[poolId];
+  const { pool, isLoading } = usePool(slug);
+
+  const poolId = pool?.pid;
 
   const [selectedInfo, setSelectedInfo] = useState(ProjectInfo.desc);
   const [isWhitelisted, setIsWhitelisted] = useState(false);
@@ -64,12 +74,12 @@ const DetailProject = () => {
       let timeRemaining;
       switch (pool.status.value) {
         case POOL_STATUSES.register.value:
-          if (pool.startTimeSwap.from != 0)
-            timeRemaining = getTimeRemaining(pool.startTimeSwap.from);
+          if (+pool.startTimeSwapFrom != 0)
+            timeRemaining = getTimeRemaining(pool.startTimeSwapFrom);
           break;
         case POOL_STATUSES.deposit.value:
           timeRemaining = getTimeRemaining(
-            pool.startTimeSwap.from + pool.startTimeSwap.duration
+            +pool.startTimeSwapFrom + pool.startTimeSwapDuration
           );
           break;
         case POOL_STATUSES.claim.value:
@@ -128,12 +138,13 @@ const DetailProject = () => {
 
   const renderStartTime = (status) => {
     let time;
+    if (!pool) return;
     switch (status) {
       case POOL_STATUSES.register.value:
         time = pool.startTime;
         break;
       case POOL_STATUSES.deposit.value:
-        time = pool.startTimeSwap.from;
+        time = pool.startTimeSwapFrom;
         break;
       case POOL_STATUSES.claim.value:
         time = pool.startTimeClaim;
@@ -170,7 +181,8 @@ const DetailProject = () => {
     }
   };
 
-  if (pools.length < poolId || !pool) return null;
+  if (isLoading) return <Spinner />;
+
   return (
     <HStack spacing="6" align="flex-start">
       <VStack flex="1" align="stretch" spacing="6">
@@ -496,7 +508,7 @@ const DetailProject = () => {
         {isWhitelisted &&
         pool.status?.value &&
         pool.status.value >= POOL_STATUSES.deposit.value ? (
-          <Link to={`/projects/${poolId}/join`}>
+          <Link to={`/projects/${pool.slug}/join`}>
             <Button
               size="lg"
               w="100%"

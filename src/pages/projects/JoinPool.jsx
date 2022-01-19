@@ -2,23 +2,25 @@ import {
   Box,
   Breadcrumb,
   BreadcrumbItem,
-  BreadcrumbLink,
   Button,
   HStack,
   Input,
+  Spinner,
   useToast,
   VStack,
 } from "@chakra-ui/react";
-import { GlobalContext } from "context/GlobalContext";
+import { PRE_ORDER_ADDRESS } from "configs";
 import { BigNumber } from "ethers";
 import { formatEther, parseEther } from "ethers/lib/utils";
 import { useActiveWeb3React } from "hooks/useActiveWeb3React";
-import React, { useContext, useEffect, useState } from "react";
-import { useMemo } from "react";
+import { usePool } from "hooks/useFetch";
+import React, { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { useParams } from "react-router-dom/cjs/react-router-dom.min";
+import { useParams, useHistory } from "react-router-dom";
 import {
+  approveB,
   buyPreOrder,
+  getAllowance,
   getTokenBalance,
   getTotalBDeposited,
   getWhitelisted,
@@ -27,10 +29,12 @@ import Whitelisted from "./components/Whitelisted";
 
 const JoinPool = () => {
   const { account, library } = useActiveWeb3React();
-  const { pools } = useContext(GlobalContext);
-  const { id: poolId } = useParams();
+  const { slug } = useParams();
+  const history = useHistory();
   const toast = useToast();
-  const pool = pools[poolId];
+  const { pool, isLoading } = usePool(slug);
+
+  const poolId = pool?.pid;
 
   const [isWhitelisted, setIsWhitelisted] = useState(false);
   const [amountB, setAmountB] = useState("0");
@@ -38,6 +42,7 @@ const JoinPool = () => {
   const [joinedJoinSuccess, setJoinedSuccess] = useState(false);
   const [totalDeposited, setTotalDeposited] = useState(0);
   const [balanceB, setBalanceB] = useState(0);
+  const [allowanceB, setAllowanceB] = useState();
 
   const amountA = useMemo(() => {
     if (!pool?.tokenAPrice || isNaN(amountB)) return;
@@ -52,47 +57,95 @@ const JoinPool = () => {
         !library ||
         isNaN(poolId) ||
         !pool ||
-        !pool.tokenAB?.tokenB
+        !pool.tokenB?.address
       )
         return;
-
       try {
-        const [whitelisted, totalDeposited, balanceB] = await Promise.all([
-          getWhitelisted(library, poolId, account),
-          getTotalBDeposited(library, poolId, account),
-          getTokenBalance(library, pool.tokenAB.tokenB, account),
-        ]);
+        const [whitelisted, totalDeposited, balanceB, allowanceB] =
+          await Promise.all([
+            getWhitelisted(library, poolId, account),
+            getTotalBDeposited(library, poolId, account),
+            getTokenBalance(library, pool.tokenB.address, account),
+            getAllowance(
+              library,
+              pool.tokenB.address,
+              account,
+              PRE_ORDER_ADDRESS
+            ),
+          ]);
         setBalanceB(balanceB);
         setIsWhitelisted(whitelisted);
         setTotalDeposited(totalDeposited);
+        setAllowanceB(allowanceB);
       } catch (error) {
         console.error(error);
       }
     })();
   }, [account, library, poolId, pool]);
 
+  const needApproved = useMemo(() => {
+    console.log(allowanceB);
+    if (+amountB === 0 || !allowanceB) return false;
+    try {
+      const _amountB = parseEther(amountB);
+      return BigNumber.from(_amountB).gt(allowanceB);
+    } catch (error) {
+      return false;
+    }
+  }, [amountB, allowanceB]);
+
+  console.count("render");
+
   const handleBuy = async () => {
     if (
       !library ||
       !account ||
-      pools.length < poolId ||
+      isNaN(poolId) ||
       !pool ||
-      !pool.tokenAB?.tokenB ||
+      !pool.tokenB.address ||
       amountB === "" ||
       +amountB === 0
     )
       return;
-    if (!isWhitelisted) alert("join whitelisted to do that");
+    if (!isWhitelisted)
+      return toast({
+        title: "Whitelisted",
+        description: "Join whitelisted to do that",
+        status: "warning",
+        duration: 5000,
+        isClosable: true,
+      });
     try {
       setSubmitting(true);
-      await buyPreOrder(
-        library,
-        account,
-        poolId,
-        pool.tokenAB?.tokenB,
-        amountB
-      );
-      setJoinedSuccess(true);
+
+      if (needApproved) {
+        await approveB(library, account, pool.tokenB.address);
+        setSubmitting(false);
+        toast({
+          title: "Approved",
+          description: "Approve success",
+          status: "success",
+          duration: 5000,
+          isClosable: true,
+        });
+      } else {
+        await buyPreOrder(
+          library,
+          account,
+          poolId,
+          pool.tokenB.address,
+          amountB
+        );
+        setJoinedSuccess(true);
+        toast({
+          title: "Transaction success",
+          description: "Buy success",
+          status: "success",
+          duration: 5000,
+          isClosable: true,
+        });
+        setTimeout(() => history.push("/projects"), 5000);
+      }
     } catch (error) {
       console.error(error);
       typeof error.data?.message === "string" &&
@@ -108,7 +161,7 @@ const JoinPool = () => {
     }
   };
 
-  if (pools.length < poolId || !pool) return null;
+  if (isLoading) return <Spinner />;
   return (
     <VStack align="stretch" spacing="8">
       <Breadcrumb separator="-" color="gray.500">
@@ -119,10 +172,10 @@ const JoinPool = () => {
           <Link to="/projects">Projects</Link>
         </BreadcrumbItem>
         <BreadcrumbItem>
-          <Link to="/projects/0">Warrior Arena</Link>
+          <Link to={`/projects/${pool.slug}`}>Warrior Arena</Link>
         </BreadcrumbItem>
         <BreadcrumbItem>
-          <Link to="/projects/0/join">Join Pool</Link>
+          <Link to={`/projects/${pool.slug}/join`}>Join Pool</Link>
         </BreadcrumbItem>
       </Breadcrumb>
 
@@ -354,7 +407,9 @@ const JoinPool = () => {
                   isLoading={submitting}
                   onClick={handleBuy}
                 >
-                  Join Pool
+                  {needApproved
+                    ? `Approve ${pool.tokenB?.symbol}`
+                    : "Join Pool"}
                 </Button>
               </VStack>
             </>

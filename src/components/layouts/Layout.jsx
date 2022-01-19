@@ -3,7 +3,6 @@ import {
   Button,
   Grid,
   HStack,
-  Icon,
   Modal,
   ModalBody,
   ModalCloseButton,
@@ -19,14 +18,10 @@ import { ReactComponent as MetamaskIcon } from "assets/images/metamask.svg";
 import { ReactComponent as WalletConnectIcon } from "assets/images/walletconnect.svg";
 import { injected, walletconnect } from "connectors";
 import { useWallet } from "connectors/hooks";
-import { GlobalContext } from "context/GlobalContext";
 import { useActiveWeb3React } from "hooks/useActiveWeb3React";
 import React from "react";
-import { useContext } from "react";
-import { useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import "styles/Layout.css";
-import { getPools } from "utils/callContract";
 
 const menu = [
   { name: "Projects", path: "/projects" },
@@ -39,14 +34,6 @@ export const Layout = ({ children }) => {
   const { connect } = useWallet();
   const location = useLocation();
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const { setPools, user } = useContext(GlobalContext);
-
-  useEffect(() => {
-    (async () => {
-      if (!library) return;
-      getPools(library, account).then(setPools).catch(console.error);
-    })();
-  }, [library, account]);
 
   return (
     <>
@@ -115,13 +102,17 @@ export const Layout = ({ children }) => {
                 <Box
                   fontSize="xl"
                   fontWeight="bold"
-                  d={{ base: "none", xl: "flex" }}
+                  // d={{ base: "none", xl: "flex" }}
                 >
                   Marstarter
                 </Box>
               </HStack>
             </Link>
-            <HStack pl="24" spacing="8" d={{ base: "none", xl: "flex" }}>
+            <HStack
+              pl="24"
+              spacing="8"
+              // d={{ base: "none", xl: "flex" }}
+            >
               {menu.map((e, idx) => (
                 <Link key={idx} to={e.path}>
                   <Box

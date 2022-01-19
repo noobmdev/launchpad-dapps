@@ -1,4 +1,9 @@
-export const PRE_ORDER_ADDRESS = "0x461239d08e0Bb075E4D9cC3794C2446d7Ba5BA68";
+if (!process.env.REACT_APP_SERVER_URL)
+  throw Error("config server url environment error");
+
+export const SERVER_URL = process.env.REACT_APP_SERVER_URL;
+
+export const PRE_ORDER_ADDRESS = "0x400a5E8A40D0812B9124AeC65d279D277D6a98f5";
 
 export const WETH = "0xae13d989dac2f0debff460ac112a837c89baa7cd";
 export const WETH_SYMBOL = "BNB";

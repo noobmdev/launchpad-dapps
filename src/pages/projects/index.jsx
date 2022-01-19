@@ -1,11 +1,13 @@
-import { Box, Grid } from "@chakra-ui/react";
-import { GlobalContext } from "context/GlobalContext";
-import React, { useContext } from "react";
+import { Box, Grid, Spinner, useToast } from "@chakra-ui/react";
+import { usePools } from "hooks/useFetch";
+import React from "react";
 import Allocations from "./components/Allocations";
 
 const Projects = () => {
-  const { pools } = useContext(GlobalContext);
-
+  const { pools, isLoading, isError } = usePools();
+  const toast = useToast();
+  if (isLoading) return <Spinner />;
+  if (isError) return null;
   return (
     <Box>
       <Box fontSize="2.25em" fontWeight="semibold" mb="1em">
@@ -20,8 +22,8 @@ const Projects = () => {
         }}
         gap="8"
       >
-        {pools.map((pool, idx) => (
-          <Allocations key={idx} pool={pool} poolId={idx} />
+        {pools?.map((pool, idx) => (
+          <Allocations key={idx} pool={pool} />
         ))}
       </Grid>
     </Box>

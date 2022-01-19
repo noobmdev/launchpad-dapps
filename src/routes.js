@@ -16,12 +16,12 @@ export const routes = [
     exact: true,
   },
   {
-    path: "/projects/:id",
+    path: "/projects/:slug",
     component: DetailProject,
     exact: true,
   },
   {
-    path: "/projects/:id/join",
+    path: "/projects/:slug/join",
     component: JoinPool,
     exact: true,
   },

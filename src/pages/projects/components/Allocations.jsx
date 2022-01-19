@@ -9,7 +9,8 @@ import { useMemo } from "react";
 import { BigNumber } from "ethers";
 import { formatTime } from "utils";
 
-const Allocations = ({ pool, poolId }) => {
+const Allocations = ({ pool }) => {
+  const poolId = pool.pid;
   const { account, library } = useActiveWeb3React();
 
   const [claimStatistics, setClaimStatistics] = useState();
@@ -26,21 +27,22 @@ const Allocations = ({ pool, poolId }) => {
   const currentBatchStatus = useMemo(() => {
     if (!pool || !claimStatistics) return;
     const currentBatch = pool.claimBatches[claimStatistics.currentBatch];
-    if (!currentBatch?.timestamp || !currentBatch?.claimPercent) return;
-    const date = pool.startTimeClaim + currentBatch.timestamp;
+    if (!currentBatch?.timestamp || !currentBatch?.percent) return;
+    const date = +pool.startTimeClaim + currentBatch.timestamp;
     const claimableInBatch = claimStatistics.claimable
-      .mul(BigNumber.from(currentBatch.claimPercent))
+      .mul(BigNumber.from(currentBatch.percent))
       .div(BigNumber.from(ONE_HUNDRED_PERCENT));
     return { date, claimableInBatch };
   }, [pool, claimStatistics]);
 
   const renderButtonTxt = (status) => {
-    switch (status) {
-      case POOL_STATUSES.register:
+    const value = status.value;
+    switch (value) {
+      case POOL_STATUSES.register.value:
         return "Go to Register";
-      case POOL_STATUSES.deposit:
+      case POOL_STATUSES.deposit.value:
         return "Go to Deposit";
-      case POOL_STATUSES.claim:
+      case POOL_STATUSES.claim.value:
         return "Go to Claim";
       default:
         return "Not available";
@@ -101,14 +103,16 @@ const Allocations = ({ pool, poolId }) => {
 
       <HStack justify="space-between">
         <Box>Date</Box>
-        <Box color="gray,500">
-          {currentBatchStatus?.date
+        <Box color="gray.500" fontSize="sm">
+          {!!pool.status &&
+          pool.status.value === POOL_STATUSES.claim.value &&
+          currentBatchStatus?.date
             ? formatTime(currentBatchStatus.date)
             : "N/A"}
         </Box>
       </HStack>
 
-      <Link to={`/projects/${poolId}`}>
+      <Link to={`/projects/${pool.slug}`}>
         <Button
           w="100%"
           color="white"

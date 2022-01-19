@@ -81,7 +81,7 @@ contract PreOrder is Ownable {
 
     struct ClaimBatch {
         uint32 timestamp;
-        uint16 claimPercent; // 1e3 = 1%
+        uint32 claimPercent; // 1e3 = 1%
     }
 
     struct Time {
@@ -106,6 +106,10 @@ contract PreOrder is Ownable {
     mapping(uint256 => mapping(address => uint256)) public pendingTokenAAmountClaimed;
     mapping(uint256 => ClaimBatch[]) public claimBatches;
     mapping(uint256 => mapping(address => uint8)) public currentClaimBatch;
+
+    event Whitelisted(uint256 indexed pid, address indexed account);
+    event Buy(uint256 indexed pid, address indexed sender, uint256 amountA, uint256 amountB, uint256 timestamp);
+    event Claim(uint256 indexed pid, address indexed sender, uint256 amount, uint256 timestamp);
 
     constructor(address _weth) {
         WETH = _weth;
@@ -159,6 +163,7 @@ contract PreOrder is Ownable {
     function _addToWhitelist(uint256 poolIdx, address _addr) private {
         require(!whitelist[poolIdx][_addr], "alredy_added_whitelist");
         whitelist[poolIdx][_addr] = true;
+        emit Whitelisted(poolIdx, _addr);
     } 
 
     function addClaimBatch(uint256 poolIdx, uint32 _timestamp, uint16 _claimPercent) public onlyOwner isValidPool(poolIdx) {
@@ -212,6 +217,7 @@ contract PreOrder is Ownable {
         totalTokenBBought[poolIdx][sender] = _amountBBought;
         totalAmountABought[poolIdx] += amountA;
         pendingTokenAAmount[poolIdx][sender] += amountA;
+        emit Buy(poolIdx, msg.sender, amountA, amountB, block.timestamp);
     }
 
     function buyPreOrder(uint256 poolIdx, uint256 amountB) external isValidPool(poolIdx) inWhitelist(poolIdx)  {
@@ -243,6 +249,7 @@ contract PreOrder is Ownable {
         pendingTokenAAmountClaimed[poolIdx][_msgSender()] += pendingClaim;
         currentClaimBatch[poolIdx][_msgSender()]++;
         IERC20(tokenAB[poolIdx].tokenA).transfer(_msgSender(), pendingClaim);
+        emit Claim(poolIdx, msg.sender, pendingClaim, block.timestamp);
     }
 
     function withdrawAllTokenAB(uint256 poolIdx) external onlyOwner isValidPool(poolIdx) {

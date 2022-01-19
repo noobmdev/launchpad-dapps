@@ -9,7 +9,6 @@ import {
 } from "configs";
 import { BigNumber } from "ethers";
 import { parseEther } from "ethers/lib/utils";
-import { m } from "framer-motion";
 import {
   callContract,
   getPreOrderContract,
@@ -236,6 +235,9 @@ export const approve = async (
   }
 };
 
+export const approveB = (library, account, tokenB) =>
+  approve(library, account, tokenB, PRE_ORDER_ADDRESS, MAX_UINT256);
+
 export const getTotalBDeposited = async (library, poolIdx, account) => {
   try {
     const preOrderContract = getPreOrderContract(library, account);
@@ -267,17 +269,6 @@ export const buyPreOrder = async (
       return;
     const _amountB = parseEther(amountB);
     const isWETH = tokenB.toLowerCase() === WETH.toLowerCase();
-    if (!isWETH) {
-      const allowance = await getAllowance(
-        library,
-        tokenB,
-        PRE_ORDER_ADDRESS,
-        account
-      );
-      if (allowance.lt(BigNumber.from(_amountB))) {
-        await approve(library, account, tokenB, PRE_ORDER_ADDRESS, MAX_UINT256);
-      }
-    }
     const method = isWETH
       ? PRE_ORDER_METHODS.buyPreOrderWETH
       : PRE_ORDER_METHODS.buyPreOrder;

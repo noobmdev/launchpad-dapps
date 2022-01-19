@@ -6,6 +6,7 @@ import { GlobalContext } from "context/GlobalContext";
 import { messages } from "language";
 import { useContext, useEffect, useState } from "react";
 import { IntlProvider } from "react-intl";
+import { SWRConfig } from "swr";
 
 function getLibrary(provider) {
   const library = new Web3Provider(provider);
@@ -27,9 +28,11 @@ function App() {
   useInactiveListener(!triedEager || !!activatingConnector);
 
   return (
-    <IntlProvider locale={language} messages={messages[language]}>
-      <Routes />
-    </IntlProvider>
+    <SWRConfig>
+      <IntlProvider locale={language} messages={messages[language]}>
+        <Routes />
+      </IntlProvider>
+    </SWRConfig>
   );
 }
 
