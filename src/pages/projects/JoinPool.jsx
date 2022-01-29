@@ -120,6 +120,13 @@ const JoinPool = () => {
 
       if (needApproved) {
         await approveB(library, account, pool.tokenB.address);
+        const allowanceB = await getAllowance(
+          library,
+          pool.tokenB.address,
+          account,
+          PRE_ORDER_ADDRESS
+        );
+        setAllowanceB(allowanceB);
         setSubmitting(false);
         toast({
           title: "Approved",
