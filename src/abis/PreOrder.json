@@ -2,6 +2,142 @@
   {
     "inputs": [
       {
+        "internalType": "address",
+        "name": "_weth",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "constructor"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "pid",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "sender",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "amountA",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "amountB",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "timestamp",
+        "type": "uint256"
+      }
+    ],
+    "name": "Buy",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "pid",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "sender",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "timestamp",
+        "type": "uint256"
+      }
+    ],
+    "name": "Claim",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "previousOwner",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "newOwner",
+        "type": "address"
+      }
+    ],
+    "name": "OwnershipTransferred",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "pid",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "enum PreOrder.TIER",
+        "name": "tier",
+        "type": "uint8"
+      }
+    ],
+    "name": "Whitelisted",
+    "type": "event"
+  },
+  {
+    "inputs": [],
+    "name": "WETH",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "uint256",
         "name": "poolIdx",
         "type": "uint256"
@@ -83,9 +219,14 @@
         "type": "uint256"
       },
       {
-        "internalType": "address",
+        "internalType": "address[]",
         "name": "_addr",
-        "type": "address"
+        "type": "address[]"
+      },
+      {
+        "internalType": "enum PreOrder.TIER[]",
+        "name": "_tiers",
+        "type": "uint8[]"
       }
     ],
     "name": "addToWhitelist",
@@ -133,123 +274,6 @@
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "poolIdx",
-        "type": "uint256"
-      }
-    ],
-    "name": "claimPendingToken",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_weth",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "nonpayable",
-    "type": "constructor"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "previousOwner",
-        "type": "address"
-      },
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "newOwner",
-        "type": "address"
-      }
-    ],
-    "name": "OwnershipTransferred",
-    "type": "event"
-  },
-  {
-    "inputs": [],
-    "name": "renounceOwnership",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "poolIdx",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint32",
-        "name": "_from",
-        "type": "uint32"
-      }
-    ],
-    "name": "setStartTimeClaim",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "poolIdx",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint32",
-        "name": "_from",
-        "type": "uint32"
-      },
-      {
-        "internalType": "uint32",
-        "name": "_duration",
-        "type": "uint32"
-      }
-    ],
-    "name": "setStartTimeSwap",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "newOwner",
-        "type": "address"
-      }
-    ],
-    "name": "transferOwnership",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "poolIdx",
-        "type": "uint256"
-      }
-    ],
-    "name": "withdrawAllTokenAB",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
         "name": "",
         "type": "uint256"
       },
@@ -267,12 +291,25 @@
         "type": "uint32"
       },
       {
-        "internalType": "uint16",
+        "internalType": "uint32",
         "name": "claimPercent",
-        "type": "uint16"
+        "type": "uint32"
       }
     ],
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "poolIdx",
+        "type": "uint256"
+      }
+    ],
+    "name": "claimPendingToken",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -365,9 +402,9 @@
             "type": "uint32"
           },
           {
-            "internalType": "uint16",
+            "internalType": "uint32",
             "name": "claimPercent",
-            "type": "uint16"
+            "type": "uint32"
           }
         ],
         "internalType": "struct PreOrder.ClaimBatch[]",
@@ -478,6 +515,54 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "renounceOwnership",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "poolIdx",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint32",
+        "name": "_from",
+        "type": "uint32"
+      }
+    ],
+    "name": "setStartTimeClaim",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "poolIdx",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint32",
+        "name": "_from",
+        "type": "uint32"
+      },
+      {
+        "internalType": "uint32",
+        "name": "_duration",
+        "type": "uint32"
+      }
+    ],
+    "name": "setStartTimeSwap",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "uint256",
@@ -545,6 +630,30 @@
         "internalType": "uint256",
         "name": "",
         "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "tiers",
+    "outputs": [
+      {
+        "internalType": "enum PreOrder.TIER",
+        "name": "",
+        "type": "uint8"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
       }
     ],
     "name": "tokenAB",
@@ -571,7 +680,7 @@
         "type": "uint256"
       }
     ],
-    "name": "tokenAmountAPreOrder",
+    "name": "tokenAPrice",
     "outputs": [
       {
         "internalType": "uint256",
@@ -590,7 +699,7 @@
         "type": "uint256"
       }
     ],
-    "name": "tokenAPrice",
+    "name": "tokenAmountAPreOrder",
     "outputs": [
       {
         "internalType": "uint256",
@@ -658,16 +767,16 @@
     "type": "function"
   },
   {
-    "inputs": [],
-    "name": "WETH",
-    "outputs": [
+    "inputs": [
       {
         "internalType": "address",
-        "name": "",
+        "name": "newOwner",
         "type": "address"
       }
     ],
-    "stateMutability": "view",
+    "name": "transferOwnership",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -692,6 +801,19 @@
       }
     ],
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "poolIdx",
+        "type": "uint256"
+      }
+    ],
+    "name": "withdrawAllTokenAB",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   }
 ]

@@ -10,13 +10,28 @@ import {
   Tr,
   VStack,
 } from "@chakra-ui/react";
-import React from "react";
-import { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { formatAddress, _toString } from "utils";
+import axiosInstance from "utils/axios";
 
-const Winners = () => {
+const Winners = ({ slug }) => {
+  const [winners, setWinners] = useState([]);
   const [currentPage, setCurrentPage] = useState(0);
-  const [totalItems, setTotalItems] = useState(4);
+  const [total, setTotal] = useState(0);
   const [perPage, setPerPage] = useState(4);
+
+  useEffect(() => {
+    (() => {
+      axiosInstance
+        .get(`/pools/${slug}/winners`)
+        .then((res) => {
+          const { data, total } = res.data;
+          setWinners(data);
+          setTotal(total);
+        })
+        .catch(console.error);
+    })();
+  }, []);
 
   return (
     <VStack spacing="4" align="stretch">
@@ -34,11 +49,11 @@ const Winners = () => {
             </Tr>
           </Thead>
           <Tbody>
-            {new Array(perPage).fill("").map((_, idx) => (
+            {winners.map((winner, idx) => (
               <Tr key={idx}>
-                <Td>0x51D2...2d8eEb7B38 </Td>
-                <Td>Tier 1</Td>
-                <Td isNumeric>529.411764</Td>
+                <Td>{formatAddress(winner.account)}</Td>
+                <Td>Tier {winner.tier}</Td>
+                <Td isNumeric>{_toString(winner.allocation)}</Td>
               </Tr>
             ))}
           </Tbody>
@@ -46,7 +61,7 @@ const Winners = () => {
       </Box>
 
       <HStack>
-        {new Array(totalItems).fill("").map((_, idx) => (
+        {new Array(total).fill("").map((_, idx) => (
           <Box
             key={idx}
             px="0.75em"

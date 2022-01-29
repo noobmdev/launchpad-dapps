@@ -3,7 +3,7 @@ if (!process.env.REACT_APP_SERVER_URL)
 
 export const SERVER_URL = process.env.REACT_APP_SERVER_URL;
 
-export const PRE_ORDER_ADDRESS = "0x400a5E8A40D0812B9124AeC65d279D277D6a98f5";
+export const PRE_ORDER_ADDRESS = "0x305b326a61876a14a9a720948b78a0B4952A8c21";
 
 export const WETH = "0xae13d989dac2f0debff460ac112a837c89baa7cd";
 export const WETH_SYMBOL = "BNB";

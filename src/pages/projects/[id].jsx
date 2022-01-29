@@ -126,7 +126,7 @@ const DetailProject = () => {
         return <Description />;
 
       case ProjectInfo.winners:
-        return <Winners />;
+        return <Winners slug={slug} />;
 
       case ProjectInfo.tokenSale:
         return <TokenSale />;

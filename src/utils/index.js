@@ -1,3 +1,5 @@
+import { formatUnits } from "ethers/lib/utils";
+
 export const removeNumericKey = (object) => {
   let obj = { ...object };
   for (let key in obj) {
@@ -37,4 +39,29 @@ export const getTimeRemaining = (endTime) => {
 export const formatTime = (time) => {
   if (isNaN(time) || !time) return;
   return new Date(time * 1000).toUTCString();
+};
+
+/**
+ *
+ * @param {String | BigNumber} bigNumber
+ * @param {Number} decimal
+ * @returns
+ */
+export const _toString = (bigNumber, decimal = 18) => {
+  if (!bigNumber) return "";
+  return formatUnits(bigNumber?.toString(), decimal);
+};
+
+/**
+ *
+ * @param {String} address
+ * @returns
+ */
+export const formatAddress = (address) => {
+  if (!address || !address?.toString()) return "";
+  const addr = address.toString();
+  const length = addr.length;
+  return length > 10
+    ? `${addr.slice(0, 6)}...${addr.slice(length - 4, length)}`
+    : addr;
 };

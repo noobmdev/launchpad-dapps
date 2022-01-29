@@ -89,6 +89,13 @@ contract PreOrder is Ownable {
         uint32 duration;
     }
 
+    enum TIER {
+        A,
+        B,
+        C
+    }
+       
+
     uint256 public totalPools;
     address public WETH;
     mapping(uint256 => bool) public isActivePool;
@@ -97,6 +104,7 @@ contract PreOrder is Ownable {
     mapping(uint256 => uint256) public tokenAmountAPreOrder;
     mapping(uint256 => uint256) public totalAmountABought;
     mapping(uint256 => mapping(address => bool)) public whitelist;
+    mapping(uint256 => mapping(address => TIER)) public tiers;
     mapping(uint256 => uint256) public maxTokenBCanBuy;
     mapping(uint256 => uint32) public startTime;
     mapping(uint256 => Time) public startTimeSwap;
@@ -107,7 +115,7 @@ contract PreOrder is Ownable {
     mapping(uint256 => ClaimBatch[]) public claimBatches;
     mapping(uint256 => mapping(address => uint8)) public currentClaimBatch;
 
-    event Whitelisted(uint256 indexed pid, address indexed account);
+    event Whitelisted(uint256 indexed pid, address indexed account, TIER indexed tier);
     event Buy(uint256 indexed pid, address indexed sender, uint256 amountA, uint256 amountB, uint256 timestamp);
     event Claim(uint256 indexed pid, address indexed sender, uint256 amount, uint256 timestamp);
 
@@ -154,19 +162,20 @@ contract PreOrder is Ownable {
         totalPools++;
     }
 
-    function addToWhitelist(uint256 poolIdx, address[] memory _addr) external onlyOwner isValidPool(poolIdx) {
+    function addToWhitelist(uint256 poolIdx, address[] memory _addr, TIER[] memory _tiers) external onlyOwner isValidPool(poolIdx) {
         for(uint256 i = 0; i < _addr.length; i++) {
-            _addToWhitelist(poolIdx, _addr[i]);
+            _addToWhitelist(poolIdx, _addr[i], _tiers[i]);
         }
     } 
 
-    function _addToWhitelist(uint256 poolIdx, address _addr) private {
+    function _addToWhitelist(uint256 poolIdx, address _addr, TIER _tier) private {
         require(!whitelist[poolIdx][_addr], "alredy_added_whitelist");
         whitelist[poolIdx][_addr] = true;
-        emit Whitelisted(poolIdx, _addr);
+        tiers[poolIdx][_addr] = _tier;
+        emit Whitelisted(poolIdx, _addr, _tier);
     } 
 
-    function addClaimBatch(uint256 poolIdx, uint32 _timestamp, uint16 _claimPercent) public onlyOwner isValidPool(poolIdx) {
+    function addClaimBatch(uint256 poolIdx, uint32 _timestamp, uint32 _claimPercent) public onlyOwner isValidPool(poolIdx) {
         require(_claimPercent <= 1e5, "over_max_percent");
         claimBatches[poolIdx].push(ClaimBatch({
             timestamp: _timestamp,
@@ -254,8 +263,12 @@ contract PreOrder is Ownable {
 
     function withdrawAllTokenAB(uint256 poolIdx) external onlyOwner isValidPool(poolIdx) {
         IERC20 tokenA = IERC20(tokenAB[poolIdx].tokenA);
-        IERC20 tokenB = IERC20(tokenAB[poolIdx].tokenB);
         tokenA.transfer(_msgSender(), tokenA.balanceOf(address(this)));
-        tokenB.transfer(_msgSender(), tokenB.balanceOf(address(this)));
+        if(tokenAB[poolIdx].tokenB == WETH) {
+            payable(_msgSender()).transfer(address(this).balance);
+        } else {
+            IERC20 tokenB = IERC20(tokenAB[poolIdx].tokenB);
+            tokenB.transfer(_msgSender(), tokenB.balanceOf(address(this)));
+        }
     }
 }
