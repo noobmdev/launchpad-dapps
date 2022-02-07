@@ -189,8 +189,12 @@ const DetailProject = () => {
         <Box>
           <Whitelisted isWhitelisted={isWhitelisted} />
           <HStack justify="space-between">
-            <Box fontSize="3em" fontWeight="semibold">
-              Warrior Arena
+            <Box
+              fontSize="3em"
+              fontWeight="semibold"
+              textTransform="capitalize"
+            >
+              {pool.name}
             </Box>
             <HStack>
               <Box cursor="pointer">
@@ -264,9 +268,7 @@ const DetailProject = () => {
             </HStack>
           </HStack>
           <Box maxW="36em" color="gray.500">
-            A 3D tower rush game that integrates battle card gameplay and
-            blockchain technology to create fast-paced brawls among dragon
-            warriors.
+            {pool.summary}
           </Box>
         </Box>
 
