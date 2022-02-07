@@ -3,9 +3,9 @@ if (!process.env.REACT_APP_SERVER_URL)
 
 export const SERVER_URL = process.env.REACT_APP_SERVER_URL;
 
-export const PRE_ORDER_ADDRESS = "0x305b326a61876a14a9a720948b78a0B4952A8c21";
+export const PRE_ORDER_ADDRESS = "0xc12357811872CD9d626BCD82eeF5b88b6fF94e2C";
 
-export const WETH = "0xae13d989dac2f0debff460ac112a837c89baa7cd";
+export const WETH = "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c";
 export const WETH_SYMBOL = "BNB";
 
 export const PRE_ORDER_METHODS = {
